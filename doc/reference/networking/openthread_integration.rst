@@ -86,4 +86,50 @@ Data receiving (RX) - TODO: expand, remove/rephrase copy/paste from the zephyrs 
 
 TX path
 *******
-TODO: svg
+
+.. figure:: zephyr_netstack_openthread-tx_sequence.svg
+    :alt: OpenThread Application TX data flow
+    :figclass: align-center
+
+    OpenThread Application TX data flow
+
+Data transmitting (TX) - TODO: expand, remove/rephrase copy/paste from the zephyrs TX page.
+
+
+1. The application uses the
+   :ref:`BSD socket API <bsd_sockets_interface>` when sending the data.
+   However, direct interaction with the OpenThread API is possible - e.g.
+   to utilize it's CoAP implementation.
+
+2. The application data is prepared for sending to kernel space and then
+   copied to internal net_buf structures.
+
+3. Depending on the socket type, a protocol header is added in front of the
+   data. For example, if the socket is a UDP socket, then a UDP header is
+   constructed and placed in front of the data.
+
+4. An IP header is added to the network packet for a UDP or TCP packet.
+
+5. The network stack will check that the network interface is properly set
+   for the network packet, and also will make sure that the network interface
+   is enabled before the data is queued to be sent.
+
+6. The network packet is then classified and placed to the proper transmit
+   queue (implemented by :ref:`k_fifo <fifos_v2>`). By default there is only
+   one transmit queue in the system, but it is possible to have up to 8
+   transmit queues. These queues will process the sent packets with different
+   priority. See :ref:`traffic-class-support` for more details.
+   After the transmit packet classification, the packet is checked by the
+   correct L2 layer module. The L2 module will do additional checks for the
+   data and it will also create any L2 headers for the network packet.
+   If everything is ok, the data is given to the network device driver to be
+   sent out.
+
+7. The device driver will send the packet to the network.
+
+Note that in both the TX and RX data paths, the queues
+(:ref:`k_fifo's <fifos_v2>`) form separation points where data is passed from
+one :ref:`thread <threads_v2>` to another.
+These :ref:`threads <threads_v2>` might run in different contexts
+(:ref:`kernel <kernel_api>` vs. :ref:`userspace <usermode_api>`) and with different
+:ref:`priorities <scheduling_v2>`.
