@@ -37,7 +37,7 @@
    id="namedview791"
    showgrid="false"
    inkscape:zoom="1"
-   inkscape:cx="-298.00616"
+   inkscape:cx="-107.21149"
    inkscape:cy="341.68175"
    inkscape:window-x="44"
    inkscape:window-y="27"
@@ -548,6 +548,7 @@
    v:horizAlign="1" /><v:tabList />Socket API</text>
 
 
+
 		</g>
 		<g
    id="shape57-29"
@@ -599,6 +600,7 @@
      id="tspan2123">nrf5_rx_thread()</tspan></text>
 
 
+
 <text
    x="74.659462"
    y="587.87073"
@@ -607,6 +609,7 @@
    id="text96-4-9"
    style="font-size:10.00003242px;font-family:Calibri;fill:#323849;stroke-width:0.99999994"><v:paragraph
    v:horizAlign="1" /><v:tabList />process_data()</text>
+
 
 <rect
    x="113.5696"
@@ -623,6 +626,7 @@
    id="text96-4-9-1"
    style="font-size:10.00003242px;font-family:Calibri;fill:#323849;stroke-width:0.99999994"><v:paragraph
    v:horizAlign="1" /><v:tabList />openthread_recv()</text>
+
 
 <rect
    x="130.92349"
@@ -643,6 +647,7 @@
      style="stroke-width:0.75000036"
      id="tspan481">openthread_process()</tspan></text>
 
+
 <rect
    x="-5.2016282"
    y="514.38818"
@@ -658,6 +663,7 @@
    id="text96-4-9-1-7"
    style="font-size:10.00003242px;font-family:Calibri;fill:#323849;stroke-width:0.99999994"><v:paragraph
    v:horizAlign="1" /><v:tabList />net_ipv6_input()</text>
+
 
 </g>
 		<g
@@ -710,6 +716,7 @@
    v:horizAlign="1" /><v:tabList />Non-IP sockets</text>
 
 
+
 		</g>
 		<g
    id="shape66-41"
@@ -749,6 +756,7 @@
    id="text120"
    style="font-size:10.00003242px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />Network Management API</text>
+
 
 
 		</g>
@@ -807,6 +815,7 @@
    v:horizAlign="1" /><v:tabList />Application Protocols</text>
 
 
+
 		</g>
 		<g
    id="shape70-52"
@@ -856,6 +865,7 @@
    id="text146"
    style="font-size:9px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />LWM2M</text>
+
 
 
 		</g>
@@ -909,6 +919,7 @@
    v:horizAlign="1" /><v:tabList />CoAP</text>
 
 
+
 		</g>
 		<g
    id="shape72-64"
@@ -950,6 +961,7 @@
    v:horizAlign="1" /><v:tabList />MQTT</text>
 
 
+
 		</g>
 		<g
    id="shape73-70"
@@ -989,6 +1001,7 @@
    id="text182"
    style="font-size:9px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />...</text>
+
 
 
 		</g>
@@ -1047,6 +1060,7 @@
    v:horizAlign="1" /><v:tabList />Network Protocols</text>
 
 
+
 		</g>
 		<g
    id="shape50-81"
@@ -1096,6 +1110,7 @@
    id="text208"
    style="font-size:9px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />IPv6</text>
+
 
 
 		</g>
@@ -1151,6 +1166,7 @@
    v:horizAlign="1" /><v:tabList />ICMPv6</text>
 
 
+
 		</g>
 		<g
    id="shape54-105"
@@ -1202,6 +1218,7 @@
    v:horizAlign="1" /><v:tabList />UDP</text>
 
 
+
 		</g>
 		<g
    id="shape55-111"
@@ -1251,6 +1268,7 @@
    id="text268"
    style="font-size:9px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />TCP</text>
+
 
 
 		</g>
@@ -1331,6 +1349,7 @@
      v:horizAlign="1" /><v:tabList /></text>
 
 
+
 		<text
    xml:space="preserve"
    style="font-style:normal;font-weight:normal;font-size:30.00001335px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75000036"
@@ -1342,6 +1361,7 @@
      x="-182.6983"
      y="602.45337"
      style="stroke-width:0.75000036" /></text>
+
 
 
 
@@ -1358,6 +1378,7 @@
      style="stroke-width:0.75000036" /></text>
 
 
+
 <text
    xml:space="preserve"
    style="font-style:normal;font-weight:normal;font-size:30.00001335px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.7500003"
@@ -1369,6 +1390,7 @@
      x="242.20717"
      y="586.99799"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.7500003">IRQ context</tspan></text>
+
 
 </g>
 		
@@ -1522,6 +1544,7 @@
    style="font-size:7.99996805px;font-family:Calibri;fill:#ed7d31"><v:paragraph /><v:tabList />User space</text>
 
 
+
 		</g>
 		<g
    id="shape134-259"
@@ -1555,6 +1578,7 @@
    v:langID="1033"
    id="text554"
    style="font-size:7.99996805px;font-family:Calibri;fill:#ed7d31"><v:paragraph /><v:tabList />Kernel space</text>
+
 
 
 		</g>
@@ -1638,6 +1662,7 @@
    v:horizAlign="1" /><v:tabList />FIFO</text>
 
 
+
 			</g>
 			<g
    id="shape136-272"
@@ -1680,6 +1705,7 @@
    style="font-size:7.99996805px;font-family:Calibri;fill:#000000"><v:paragraph
    v:spLine="-1.4"
    v:horizAlign="1" /><v:tabList />nRF5_data.rx_fifo</text>
+
 
 
 			</g>
@@ -1764,6 +1790,7 @@
    v:horizAlign="1" /><v:tabList />FIFO</text>
 
 
+
 			</g>
 			<g
    id="shape140-288"
@@ -1808,6 +1835,7 @@
    v:horizAlign="1" /><v:tabList />Socket queue</text>
 
 
+
 			</g>
 		</g>
 		<g
@@ -1846,6 +1874,7 @@
    class="st23"
    id="tspan619"
    style="font-size:18px">packet</tspan></text>
+
 
 
 		</g>
@@ -1953,6 +1982,7 @@
    v:horizAlign="1" /><v:tabList />Network Application</text>
 
 
+
 			</g>
 			<g
    id="shape157-315"
@@ -2024,6 +2054,7 @@
    style="font-size:7.99996805px;font-family:Calibri;fill:#ed7d31"><v:paragraph /><v:tabList />“Bottom Half”</text>
 
 
+
 		</g>
 		<g
    id="shape162-323"
@@ -2057,6 +2088,7 @@
    v:langID="1033"
    id="text677"
    style="font-size:7.99996805px;font-family:Calibri;fill:#ed7d31"><v:paragraph /><v:tabList />Core stack</text>
+
 
 
 		</g>
@@ -2113,6 +2145,7 @@
    v:horizAlign="1" /><v:tabList />1</text>
 
 
+
 		</g>
 		<g
    id="shape171-332"
@@ -2167,6 +2200,7 @@
    v:horizAlign="1" /><v:tabList />2</text>
 
 
+
 		</g>
 		<g
    id="shape172-338"
@@ -2219,6 +2253,7 @@
    id="text713"
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff"><v:paragraph
    v:horizAlign="1" /><v:tabList />3</text>
+
 
 
 		</g>
@@ -2276,6 +2311,7 @@
    v:horizAlign="1" /><v:tabList />9</text>
 
 
+
 		</g>
 		<g
    id="shape175-356"
@@ -2328,6 +2364,7 @@
    id="text749"
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff"><v:paragraph
    v:horizAlign="1" /><v:tabList />10</text>
+
 
 
 		</g>
@@ -2384,6 +2421,7 @@
    v:horizAlign="1" /><v:tabList />11</text>
 
 
+
 		</g>
 		
 		<g
@@ -2426,6 +2464,7 @@
      style="stroke-width:0.75000036"> </tspan></text>
 
 
+
 <text
    style="font-size:12px;font-family:Calibri;fill:#323849;stroke-width:0.99999994"
    x="169.3387"
@@ -2436,6 +2475,7 @@
    v:horizAlign="1" /><v:tabList /></text>
 
 
+
 <text
    style="font-size:12px;font-family:Calibri;fill:#323849;stroke-width:0.99999994"
    x="226.65366"
@@ -2444,6 +2484,7 @@
    v:langID="1033"
    id="text96-7-5">IEEE 802.15.4 frames<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
+
 
 
 <text
@@ -2457,6 +2498,7 @@
      x="402.62814"
      y="512.14929"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000572px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000036">thread: &quot;802154 RX&quot;</tspan></text>
+
 
 
 <g
@@ -2484,14 +2526,15 @@
      style="stroke:#5b9bd5;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#mrkr4-237-5)" /></g><text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000381px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75000036"
-   x="350.745"
-   y="363.88596"
+   x="234.49495"
+   y="357.88596"
    id="text514"><tspan
      sodipodi:role="line"
      id="tspan512"
-     x="350.745"
-     y="363.88596"
+     x="234.49495"
+     y="357.88596"
      style="stroke-width:0.75000036">IEEE 802.15.4</tspan></text>
+
 
 <g
    id="shape124-232-6"
@@ -2517,6 +2560,7 @@
      y="411.23471"
      style="stroke-width:0.75000036">IEEE 802.15.4</tspan></text>
 
+
 <text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000286px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75000036"
@@ -2533,6 +2577,7 @@
      y="422.48471"
      style="stroke-width:0.75000036"
      id="tspan1773">NET_OK</tspan></text>
+
 
 <g
    id="shape124-232-9-0"
@@ -2562,6 +2607,7 @@
      style="stroke-width:0.75000036"
      id="tspan1775">NET_CONTINUE</tspan></text>
 
+
 <text
    xml:space="preserve"
    style="font-style:normal;font-weight:normal;font-size:30.00001335px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75000036"
@@ -2573,6 +2619,7 @@
      x="406.78662"
      y="423.15079"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000572px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000036">thread: &quot;rx_workq&quot;</tspan></text>
+
 
 <text
    xml:space="preserve"
@@ -2586,6 +2633,7 @@
      y="332.35309"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000572px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000036">thread: &quot;openthread&quot;</tspan></text>
 
+
 <text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000286px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75000036"
@@ -2597,6 +2645,7 @@
      x="252.24042"
      y="429.62473"
      style="stroke-width:0.75000036">IPv6</tspan></text>
+
 
 <g
    id="shape124-232-9-8"
@@ -2656,6 +2705,7 @@
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff"><v:paragraph
    v:horizAlign="1" /><v:tabList />4</text>
 
+
 </g><g
    id="shape171-332-3-6"
    v:mID="171"
@@ -2695,6 +2745,7 @@
    id="text701-8-9"
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff"><v:paragraph
    v:horizAlign="1" /><v:tabList />5</text>
+
 
 </g><g
    style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke-linecap:square;stroke-miterlimit:3"
@@ -2737,6 +2788,7 @@
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff">6<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
 
+
 </g><g
    style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke-linecap:square;stroke-miterlimit:3"
    id="shape171-332-3-6-6"
@@ -2777,6 +2829,7 @@
    id="text701-8-9-1"
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff">7<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
+
 
 </g><g
    style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke-linecap:square;stroke-miterlimit:3"
@@ -2819,5 +2872,17 @@
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff">8<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
 
-</g></g>
+
+</g><text
+   xml:space="preserve"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000381px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
+   x="420.90564"
+   y="364.99619"
+   id="text514-9"><tspan
+     sodipodi:role="line"
+     id="tspan512-7"
+     x="420.90564"
+     y="364.99619"
+     style="stroke-width:0.75000042">IPv6</tspan></text>
+</g>
 </svg>

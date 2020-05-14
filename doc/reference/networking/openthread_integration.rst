@@ -55,15 +55,17 @@ Data receiving (RX) - TODO: expand, remove/rephrase copy/paste from the zephyrs 
    received IEEE 802.15.4 radio frame. As a result it puts a work item
    with the net_recv_data() to have the frame processed.
 
-4. The work queue thread rx_workq calls the openthread_recv() which inserts
-   the frame in the rx_pkt_fifo and returns the NET_OK.
+4. The work queue thread rx_workq calls the registered handler for every queued frame.
+   In this case the registered handler openthread_recv() checks if the frame is of the 
+   IEEE 802.15.4 type and if it is the case it insertd the frame in the rx_pkt_fifo and returns the NET_OK.
 
-5. The OpenThread thread gets a frame from the FIFO and consumes it.
+5. The OpenThread thread gets a frame from the FIFO and processes it.
    It also handles IP header compression, reassembly of fragmented traffic.
 
 6. As soon as it detects a valid IPv6 packet that needs to be handled by the 
    higher layer it calls the registered callback ot_receive_handler()
-   wchich calls the net_recv_data() to have it processed.
+   which creates a buffer for a net_pkt that is going to be passed to the Zephyr's IP stack
+   and calls the net_recv_data() to have it processed.
 
 7. This time the openthread_recv() called by the work queue returns NET_CONTINUE
    indicating that the valid IPv6 packet is present and needs to be processed by
