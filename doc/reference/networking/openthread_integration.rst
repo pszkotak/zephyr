@@ -30,15 +30,22 @@ The OpenThread Network Stack is present in the following paths:
 The nRF IEEE802.15.4 Radio Driver is present in the following paths:
 - nRF IEEE802.15.4 Radio Driver shim layer location: zephyr/drivers/ieee802154/{ieee802154_nrf5.c/ieee802154_nrf5.h
 - nRF IEEE802.15.4 Radio Driver location: modules/hal/nordic/drivers/nrf_radio_802154
+The RX connection of the radio driver is done with the interrupt handler 
+registered using the Zephyr's mechanism with the NRF_802154_INTERNAL_RADIO_IRQ_HANDLING=0 defined. 
+The registered IRQ handler uses Zephyr's FIFO to pass the IEEE802.15.4 frame further.
+The 802154 thread runs on the highest cooperative priority and waits on this FIFO. 
+Once new frame apears it continues with the processing.
+
+The TX connection uses the workqueue which calls the radio driver calls. TODO: check, expand
 
 Threads
 *******
-- openthread - TODO
+- openthread - 
 - rx_workq - TODO
 - tx_workq - TODO
 - sysworkq - TODO
 - workqueue - TODO
-- 802154 RX - resposible for the "upper half" processing of the radio frame. 
+- 802154 RX - resposible for the "upper half" processing of the radio frame reception. 
   Works on the objects of type nrf5_802154_rx_frame which are put to the nrf5_data.rx_fifo
   from the RX IRQ context. Then it is responsible of creating the net_pkt structure
   and passing it the upper layer with the net_recv_data().
