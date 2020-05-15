@@ -21,11 +21,16 @@ which is the application protocol.
 
 File system and shim layer
 **************************
-More details TODO
 
 The OpenThread Network Stack is present in the following paths:
 - OpenThread stack location: modules/lib/openthread/
 - OpenThread shim layer location: zephyr/subsys/net/lib/openthread/platform/
+It's responsibilities include:
+- translating the data into the Zephyr's native net_pkt,
+- providing openthread thread body and synchronization API,
+- providinng openthread_send(), openthread_recv() calls which are registered as the L2 interface API,
+- providing a way to initialize the OpenThread stack,
+- implementing callback functions used by the OpenThread stack
 
 The nRF IEEE802.15.4 Radio Driver is present in the following paths:
 - nRF IEEE802.15.4 Radio Driver shim layer location: zephyr/drivers/ieee802154/{ieee802154_nrf5.c/ieee802154_nrf5.h
@@ -36,15 +41,26 @@ The registered IRQ handler uses Zephyr's FIFO to pass the IEEE802.15.4 frame fur
 The 802154 thread runs on the highest cooperative priority and waits on this FIFO. 
 Once new frame apears it continues with the processing.
 
-The TX connection uses the workqueue which calls the radio driver calls. TODO: check, expand
+The TX connection uses the workqueue which calls the radio driver calls to schedule the transmission.
+Then the RTC IRQ is used to send the frame over the air.
 
 Threads
 *******
-- openthread - 
-- rx_workq - TODO
-- tx_workq - TODO
-- sysworkq - TODO
-- workqueue - TODO
+- openthread - responsible for receiving IEEE 802.15.4 frames during reception.
+  When the reassembled trafic turns out to be the IPv6 packet it calls the ot_receive_handler()
+  which injects it back to the L2 via the net_recv_data() so it could later reach the Zephyr's IP stack.
+  During the transmission it's job is to handle the previously scheduled OpenThread Tasklet containig 
+  a message to be sent.
+
+- rx_workq - responsible for receiving L2 frames and directing them either to the openthread process
+  or the Zephyr's IP stack during reception depening if it is the IEEE 802.15.4 frame
+  or the IPv6 packet.
+
+- tx_workq - responsible for receiving UDP packet and scheduling the OpenThread Tasklet
+  for transmission and unlocking the openthread thread by giving the semaphore.
+
+- workqueue - responsible for invoking the radio driver API in order to schedule a transmission.
+
 - 802154 RX - resposible for the "upper half" processing of the radio frame reception. 
   Works on the objects of type nrf5_802154_rx_frame which are put to the nrf5_data.rx_fifo
   from the RX IRQ context. Then it is responsible of creating the net_pkt structure

@@ -11,22 +11,19 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="6.8312769in"
-   height="9.23384in"
-   viewBox="0 0 491.8521 664.83683"
+   width="6.9161801in"
+   height="8.9222498in"
+   viewBox="0 0 497.96514 642.40232"
    xml:space="preserve"
    class="st49"
    version="1.1"
    id="svg789"
    sodipodi:docname="zephyr_netstack_openthread-tx_sequence.svg"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
-   style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke-linecap:square;stroke-miterlimit:3"
-   inkscape:export-filename="/home/pisz/Documents/openthread_tx.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96"><metadata
+   style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke-linecap:square;stroke-miterlimit:3"><metadata
    id="metadata793"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><sodipodi:namedview
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><sodipodi:namedview
    pagecolor="#ffffff"
    bordercolor="#666666"
    borderopacity="1"
@@ -40,12 +37,12 @@
    id="namedview791"
    showgrid="false"
    inkscape:zoom="1.3514602"
-   inkscape:cx="57.541857"
-   inkscape:cy="303.25172"
+   inkscape:cx="61.801917"
+   inkscape:cy="368.02203"
    inkscape:window-x="44"
    inkscape:window-y="27"
    inkscape:window-maximized="1"
-   inkscape:current-layer="shape144-294"
+   inkscape:current-layer="g787"
    fit-margin-top="0"
    fit-margin-left="0"
    fit-margin-right="0"
@@ -503,7 +500,7 @@
    v:index="2"
    v:groupContext="foregroundPage"
    id="g787"
-   transform="translate(-27.92085,-14.817942)">
+   transform="translate(-24.170848,-20.067944)">
 		<v:userDefs>
 			<v:ud
    v:nameU="msvThemeOrder"
@@ -550,7 +547,7 @@
    id="shape96-9"
    v:mID="96"
    v:groupContext="shape"
-   transform="rotate(0.0140873,330758.59,161971.68)">
+   transform="rotate(0.0140873,330758.59,161969.42)">
 			<title
    id="title50">Sheet.96</title>
 			
@@ -623,7 +620,6 @@
 
 
 
-
 		</g>
 		<g
    id="shape57-29"
@@ -671,7 +667,6 @@
    v:horizAlign="1" /><v:tabList />openthread_send()</text>
 
 
-
 <rect
    x="-1.2646446"
    y="570.08777"
@@ -698,7 +693,6 @@
    v:horizAlign="1" /><v:tabList />process_tx_packet()</text>
 
 
-
 <text
    x="71.703712"
    y="585.81281"
@@ -707,7 +701,6 @@
    id="text96-4-9-1-3"
    style="font-size:10.00003242px;font-family:Calibri;overflow:visible;color-interpolation-filters:sRGB;fill:#323849;fill-rule:evenodd;stroke-width:1;stroke-linecap:square;stroke-miterlimit:3"><v:paragraph
    v:horizAlign="1" /><v:tabList />openthread_process()</text>
-
 <rect
    x="-1.2646801"
    y="596.40039"
@@ -723,7 +716,6 @@
    id="text96-4-9-1-3-6"
    style="font-size:10.00003242px;font-family:Calibri;overflow:visible;color-interpolation-filters:sRGB;fill:#323849;fill-rule:evenodd;stroke-width:1;stroke-linecap:square;stroke-miterlimit:3">otPlatRadioTransmit()<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
-
 <rect
    x="-2.7244899"
    y="657.07214"
@@ -739,7 +731,6 @@
    id="text96-4-9-1-3-6-6"
    style="font-size:10.00003242px;font-family:Calibri;overflow:visible;color-interpolation-filters:sRGB;fill:#323849;fill-rule:evenodd;stroke-width:1;stroke-linecap:square;stroke-miterlimit:3">transmit_message()<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
-
 <rect
    x="-3.5577607"
    y="716.02087"
@@ -755,7 +746,6 @@
    id="text96-4-9-1-3-6-6-1"
    style="font-size:10.00003242px;font-family:Calibri;overflow:visible;color-interpolation-filters:sRGB;fill:#323849;fill-rule:evenodd;stroke-width:1;stroke-linecap:square;stroke-miterlimit:3">nRF5 IEEE 802.15.4 Radio Driver<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
-
 <rect
    x="3.8256195"
    y="508.57208"
@@ -771,7 +761,6 @@
    id="text96-4-9-1-1"
    style="font-size:10.00003242px;font-family:Calibri;overflow:visible;color-interpolation-filters:sRGB;fill:#323849;fill-rule:evenodd;stroke-width:0.99999994;stroke-linecap:square;stroke-miterlimit:3"><v:paragraph
    v:horizAlign="1" /><v:tabList />otIp6Send()</text>
-
 </g>
 		<g
    id="shape60-35"
@@ -824,7 +813,6 @@
 
 
 
-
 		</g>
 		<g
    id="shape66-41"
@@ -864,7 +852,6 @@
    id="text120"
    style="font-size:10.00003242px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />Network Management API</text>
-
 
 
 
@@ -925,7 +912,6 @@
 
 
 
-
 		</g>
 		<g
    id="shape70-52"
@@ -975,7 +961,6 @@
    id="text146"
    style="font-size:9px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />LWM2M</text>
-
 
 
 
@@ -1031,7 +1016,6 @@
 
 
 
-
 		</g>
 		<g
    id="shape72-64"
@@ -1071,7 +1055,6 @@
    id="text170"
    style="font-size:9px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />MQTT</text>
-
 
 
 
@@ -1117,7 +1100,6 @@
 
 
 
-
 		</g>
 		
 		<g
@@ -1152,7 +1134,6 @@
    id="text196"
    style="font-size:12.00012016px;font-family:Calibri;fill:#d8d8d8"><v:paragraph
    v:horizAlign="1" /><v:tabList />Network Protocols</text>
-
 
 
 
@@ -1205,7 +1186,6 @@
    id="text208"
    style="font-size:9px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />IPv6</text>
-
 
 
 
@@ -1263,7 +1243,6 @@
 
 
 
-
 		</g>
 		<g
    id="shape54-105"
@@ -1316,7 +1295,6 @@
 
 
 
-
 		</g>
 		<g
    id="shape55-111"
@@ -1366,7 +1344,6 @@
    id="text268"
    style="font-size:9px;font-family:Calibri;fill:#c9c9c9"><v:paragraph
    v:horizAlign="1" /><v:tabList />TCP</text>
-
 
 
 
@@ -1488,7 +1465,6 @@
 
 
 
-
 		</g>
 		<g
    id="shape134-259"
@@ -1522,7 +1498,6 @@
    v:langID="1033"
    id="text554"
    style="font-size:7.99996805px;font-family:Calibri;fill:#ed7d31"><v:paragraph /><v:tabList />Kernel space</text>
-
 
 
 
@@ -1593,16 +1568,12 @@
    class="st44"
    v:langID="1033"
    id="text621"
-   style="font-size:18px;font-family:Calibri;fill:#000000"
-   inkscape:export-filename="/home/pisz/Documents/openthread_tx.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96"><v:paragraph /><v:tabList />Transmitting IPv6  <tspan
+   style="font-size:18px;font-family:Calibri;fill:#000000"><v:paragraph /><v:tabList />Receiving IPv6  <tspan
    x="4"
    dy="1.2em"
    class="st23"
    id="tspan619"
    style="font-size:18px">packet</tspan></text>
-
 
 
 
@@ -1698,7 +1669,6 @@
 
 
 
-
 			</g>
 			<g
    id="shape157-315"
@@ -1757,7 +1727,7 @@
    id="shape168-326"
    v:mID="168"
    v:groupContext="shape"
-   transform="matrix(1,0,0,0.98861485,40.128831,-75.93124)">
+   transform="translate(40.128831,-84.207329)">
 			<title
    id="title680">Circle</title>
 			<desc
@@ -1807,7 +1777,6 @@
 
 
 
-
 		<text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.00000381px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.7500003"
@@ -1818,8 +1787,7 @@
      id="tspan857"
      x="13.865393"
      y="600.1297"
-     style="stroke-width:0.7500003" /></text>
-
+     style="stroke-width:0.7500003"></tspan></text>
 <path
    d="m -0.77623549,678.18894 a 10,10 0 0 1 19.99999949,0 10,10 0 1 1 -19.99999949,0 z"
    class="st47"
@@ -1835,8 +1803,7 @@
      id="tspan876"
      x="6.0531955"
      y="662.53528"
-     style="stroke-width:0.7500003" /></text>
-
+     style="stroke-width:0.7500003"></tspan></text>
 <text
    x="6.5633779"
    y="682.93903"
@@ -1845,7 +1812,6 @@
    id="text689-5"
    style="font-size:10.00003242px;font-family:Calibri;overflow:visible;color-interpolation-filters:sRGB;fill:#feffff;fill-rule:evenodd;stroke-width:1;stroke-linecap:square;stroke-miterlimit:3">7<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
-
 <text
    x="117.04519"
    y="726.77783"
@@ -1854,38 +1820,7 @@
    id="text689-5-4"
    style="font-size:10.00003242px;font-family:Calibri;overflow:visible;color-interpolation-filters:sRGB;fill:#feffff;fill-rule:evenodd;stroke-width:1;stroke-linecap:square;stroke-miterlimit:3">8<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
-
-<g
-   style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke-linecap:square;stroke-miterlimit:3"
-   id="shape23-144"
-   v:mID="23"
-   v:groupContext="shape"
-   transform="matrix(1.0866542,0,0,0.99968995,46.048823,101.67409)"><title
-     id="title328">Rectangle.23</title><v:userDefs><v:ud
-       v:nameU="visVersion"
-       v:val="VT0(15):26" /></v:userDefs><rect
-     x="0"
-     y="496.37601"
-     width="275.03"
-     height="102.25"
-     class="st22"
-     id="rect330"
-     style="fill:#ffffff;fill-opacity:0.32000002;stroke:#323849;stroke-width:0.75" /></g><g
-   style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke-linecap:square;stroke-miterlimit:3"
-   id="shape23-144-1"
-   v:mID="23"
-   v:groupContext="shape"
-   transform="matrix(1.0866697,0,0,0.74260038,47.156602,140.13302)"><title
-     id="title328-8">Rectangle.23</title><v:userDefs><v:ud
-       v:nameU="visVersion"
-       v:val="VT0(15):26" /></v:userDefs><rect
-     x="0"
-     y="496.37601"
-     width="275.03"
-     height="102.25"
-     class="st22"
-     id="rect330-5"
-     style="fill:#ffffff;fill-opacity:0.32000002;stroke:#323849;stroke-width:0.75" /></g></g>
+</g>
 		<g
    id="shape171-332"
    v:mID="171"
@@ -1937,7 +1872,6 @@
    id="text701"
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff"><v:paragraph
    v:horizAlign="1" /><v:tabList />5</text>
-
 
 
 
@@ -1993,7 +1927,6 @@
    id="text713"
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff"><v:paragraph
    v:horizAlign="1" /><v:tabList />4</text>
-
 
 
 
@@ -2054,7 +1987,6 @@
 
 
 
-
 		</g>
 		<g
    id="shape175-356"
@@ -2107,7 +2039,6 @@
    id="text749"
    style="font-size:10.00003242px;font-family:Calibri;fill:#feffff"><v:paragraph
    v:horizAlign="1" /><v:tabList />2</text>
-
 
 
 
@@ -2166,7 +2097,6 @@
 
 
 
-
 		</g>
 		
 		<g
@@ -2213,7 +2143,6 @@
 
 
 
-
 <text
    style="font-size:12px;font-family:Calibri;fill:#323849;stroke-width:0.99999994"
    x="209.8174"
@@ -2222,7 +2151,6 @@
    v:langID="1033"
    id="text96-7-5">IEEE 802.15.4 frames<v:paragraph
    v:horizAlign="1" /><v:tabList /></text>
-
 
 
 
@@ -2246,7 +2174,6 @@
 
 
 
-
 <text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000286px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75000036"
@@ -2260,33 +2187,30 @@
      id="tspan1775"> net_if_queue_tx()</tspan></text>
 
 
-
 <text
    xml:space="preserve"
    style="font-style:normal;font-weight:normal;font-size:30.00001335px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75000036"
-   x="400.65198"
+   x="404.53665"
    y="352.65079"
    id="text4527-8-1-5"><tspan
      sodipodi:role="line"
      id="tspan4525-1-7-9"
-     x="400.65198"
+     x="404.53665"
      y="352.65079"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000572px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000036">thread: &quot;tx_workq&quot;</tspan></text>
-
 
 
 <text
    xml:space="preserve"
    style="font-style:normal;font-weight:normal;font-size:30.00001335px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75000036"
-   x="393.4155"
-   y="459.2356"
+   x="388.4209"
+   y="427.60312"
    id="text4527-8-1-6"><tspan
      sodipodi:role="line"
      id="tspan4525-1-7-2"
-     x="393.4155"
-     y="459.2356"
+     x="388.4209"
+     y="427.60312"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000572px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000036">thread: &quot;openthread&quot;</tspan></text>
-
 
 
 
@@ -2313,15 +2237,14 @@
      style="stroke:#5b9bd5;stroke-width:2.68800139;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3;stroke-dasharray:none;marker-end:url(#mrkr4-237-3)" /></g><text
    xml:space="preserve"
    style="font-style:normal;font-weight:normal;font-size:30.00001144px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
-   x="401.42728"
+   x="402.5372"
    y="259.11359"
    id="text4527-8-1-5-3"><tspan
      sodipodi:role="line"
      id="tspan4525-1-7-9-6"
-     x="401.42728"
+     x="402.5372"
      y="259.11359"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000668px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000042">thread: &quot;sysworkq&quot;</tspan></text>
-
 <path
    style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke:#5b9bd5;stroke-width:1.50925636;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3;marker-end:url(#mrkr4-237-4)"
    inkscape:connector-curvature="0"
@@ -2332,27 +2255,25 @@
    inkscape:transform-center-y="-1.7118602" /><text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000286px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
-   x="158.91103"
-   y="408.71783"
+   x="92.871323"
+   y="409.82776"
    id="text514-5-8-6-2"><tspan
      sodipodi:role="line"
-     x="158.91103"
-     y="408.71783"
+     x="92.871323"
+     y="409.82776"
      style="stroke-width:0.75000042"
      id="tspan1775-9"> PostTasklet()</tspan></text>
-
 <text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000286px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
-   x="159.95204"
-   y="419.71603"
+   x="53.955532"
+   y="423.04578"
    id="text514-5-8-6-2-0"><tspan
      sodipodi:role="line"
-     x="159.95204"
-     y="419.71603"
+     x="53.955532"
+     y="423.04578"
      style="stroke-width:0.75000042"
      id="tspan1775-9-8">k_sem_give(&amp;ot_sem)</tspan></text>
-
 <text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000286px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
@@ -2364,7 +2285,6 @@
      y="498.32776"
      style="stroke-width:0.75000042"
      id="tspan1775-9-8-5">k_work_submit_to_queue(&amp;ot_work_q, &amp;tx_job)</tspan></text>
-
 <text
    xml:space="preserve"
    style="font-style:normal;font-weight:normal;font-size:30.00001144px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
@@ -2376,7 +2296,6 @@
      y="563.32367"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000668px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000042"
      id="tspan653" /></text>
-
 <text
    xml:space="preserve"
    style="font-style:normal;font-weight:normal;font-size:30.00001144px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
@@ -2388,7 +2307,6 @@
      x="391.33115"
      y="560.0307"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000668px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000042">thread: &quot;workqueue&quot;</tspan></text>
-
 <text
    xml:space="preserve"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.00000286px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
@@ -2405,7 +2323,6 @@
      y="575.57782"
      style="stroke-width:0.75000042"
      id="tspan725" /></text>
-
 <g
    style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke-linecap:square;stroke-miterlimit:3"
    id="shape154-298-4"
@@ -2429,7 +2346,6 @@
      y="304.8277"
      style="stroke-width:0.75000042"
      id="tspan1775-6">UDPv6 net_pkt</tspan></text>
-
 <path
    style="font-size:12px;overflow:visible;color-interpolation-filters:sRGB;fill:none;fill-rule:evenodd;stroke:#5b9bd5;stroke-width:1.50925636;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3;marker-end:url(#mrkr4-237-4-7)"
    inkscape:connector-curvature="0"
@@ -2444,5 +2360,16 @@
    class="st30"
    id="path514-4-1-6-7"
    inkscape:transform-center-x="0.63104225"
-   inkscape:transform-center-y="-1.7118602" /></g>
+   inkscape:transform-center-y="-1.7118602" /><text
+   xml:space="preserve"
+   style="font-style:normal;font-weight:normal;font-size:30.00001144px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;overflow:visible;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.75000042;stroke-linecap:square;stroke-miterlimit:3"
+   x="408.33942"
+   y="645.80231"
+   id="text4527-8-1-6-8-5"><tspan
+     sodipodi:role="line"
+     id="tspan4525-1-7-2-4-3"
+     x="408.33942"
+     y="645.80231"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.00000668px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.75000042">IRQ context</tspan></text>
+</g>
 </svg>
