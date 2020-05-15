@@ -9,19 +9,44 @@ OpenThread Integration
 
 Overview
 ********
-TODO
+The OpenThread stack is integrated with the Zephyr RTOS as the L2 layer.
+The main advantage of this approach is that it can utilize the Zephyr's L3 layer.
+The drawback, on the other hand, lies in the reception path in which the IP packet
+needs to traverse the OpenThread L3 layer and then Zephyr's L3 layer in order to 
+reach the BSD socket.
+
+Note that if one desires the application can use just the OpenThread API 
+with it's IPv6 stack and even the internal CoAP implementation 
+which is the application protocol.
 
 File system and shim layer
 **************************
-TODO
+More details TODO
+
+The OpenThread Network Stack is present in the following paths:
+- OpenThread stack location: modules/lib/openthread/
+- OpenThread shim layer location: zephyr/subsys/net/lib/openthread/platform/
+
+The nRF IEEE802.15.4 Radio Driver is present in the following paths:
+- nRF IEEE802.15.4 Radio Driver shim layer location: zephyr/drivers/ieee802154/{ieee802154_nrf5.c/ieee802154_nrf5.h
+- nRF IEEE802.15.4 Radio Driver location: modules/hal/nordic/drivers/nrf_radio_802154
 
 Threads
 *******
-TODO
+- openthread - TODO
+- rx_workq - TODO
+- tx_workq - TODO
+- sysworkq - TODO
+- workqueue - TODO
+- 802154 RX - resposible for the "upper half" processing of the radio frame. 
+  Works on the objects of type nrf5_802154_rx_frame which are put to the nrf5_data.rx_fifo
+  from the RX IRQ context. Then it is responsible of creating the net_pkt structure
+  and passing it the upper layer with the net_recv_data().
 
 Traffic flow
 ************
-TODO
+The traffic flow is not fully summetrical for the reception (RX) and the transmission (TX) cases.
+Each of these flows is described below in an appropriate section.
 
 RX path
 *******
