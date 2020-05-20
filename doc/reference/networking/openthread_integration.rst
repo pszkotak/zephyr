@@ -39,22 +39,22 @@ The RX connection of the radio driver is done with the interrupt handler
 registered using the Zephyr's mechanism with the NRF_802154_INTERNAL_RADIO_IRQ_HANDLING=0 defined. 
 The registered IRQ handler uses Zephyr's FIFO to pass the IEEE802.15.4 frame further.
 The 802154 thread runs on the highest cooperative priority and waits on this FIFO. 
-Once new frame apears it continues with the processing.
+Once a new frame appears, it continues with the processing.
 
-The TX connection uses the workqueue which calls the radio driver calls to schedule the transmission.
+The TX connection uses the workqueue, which calls the radio driver calls to schedule the transmission.
 Then the RTC IRQ is used to send the frame over the air.
 
 Threads
 *******
 - openthread - responsible for receiving IEEE 802.15.4 frames during reception.
-  When the reassembled trafic turns out to be the IPv6 packet it calls the ot_receive_handler()
-  which injects it back to the L2 via the net_recv_data() so it could later reach the Zephyr's IP stack.
-  During the transmission it's job is to handle the previously scheduled OpenThread Tasklet containig 
+  When the reassembled traffic turns out to be the IPv6 packet, it calls the ot_receive_handler()
+  which injects it back to the L2 via the net_recv_data(), so that it could later reach the Zephyr's IP stack.
+  During the transmission, its job is to handle the previously scheduled OpenThread Tasklet that contains
   a message to be sent.
 
 - rx_workq - responsible for receiving L2 frames and directing them either to the openthread process
-  or the Zephyr's IP stack during reception depening if it is the IEEE 802.15.4 frame
-  or the IPv6 packet.
+  or the Zephyr's IP stack during reception, depending whether the frame is an IEEE 802.15.4 frame
+  or an IPv6 packet.
 
 - tx_workq - responsible for receiving UDP packet and scheduling the OpenThread Tasklet
   for transmission and unlocking the openthread thread by giving the semaphore.
@@ -62,7 +62,7 @@ Threads
 - workqueue - responsible for invoking the radio driver API in order to schedule a transmission.
 
 - 802154 RX - resposible for the "upper half" processing of the radio frame reception. 
-  Works on the objects of type nrf5_802154_rx_frame which are put to the nrf5_data.rx_fifo
+  Works on the objects of type ``nrf5_802154_rx_frame`` which are put to the ``nrf5_data.rx_fifo``
   from the RX IRQ context. Then it is responsible of creating the net_pkt structure
   and passing it the upper layer with the net_recv_data().
 
@@ -74,9 +74,8 @@ Each of these flows is described below in an appropriate section.
 RX path
 *******
 An application typically consists of one or more :ref:`threads <threads_v2>`
-that execute the application logic. When using the
-:ref:`BSD socket API <bsd_sockets_interface>`, the following things will
-happen.
+that execute the application logic.
+The following figure shows what happens when you are using the :ref:`BSD socket API <bsd_sockets_interface>`.
 
 .. figure:: zephyr_netstack_openthread-rx_sequence.svg
     :alt: OpenThread Application RX data flow
