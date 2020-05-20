@@ -7,38 +7,56 @@ OpenThread Integration
     :local:
     :depth: 2
 
-Overview
-********
-The OpenThread stack is integrated with the Zephyr RTOS as the L2 layer.
-The main advantage of this approach is that it can utilize the Zephyr's L3 layer.
+The goal of this page is to explain how the OpenThread stack is integrated
+with remaining parts of the system in terms of the file structure,
+used threads and synchronization primitives and the network traffic flow.
+
+The OpenThread stack is integrated with the Zephyr RTOS as the L2 layer
+with the IEEE 802.15.4 Radio Driver underneath and Zephyr IPv6 stack above it.
+The main advantage of this approach is that it can utilize the Zephyr's L3 layer
+which allows for easy easy application porting and utilization of UDP, TCP and ICMP
+build on top of Zephyr's IPv6 stack.
 The drawback, on the other hand, lies in the reception path in which the IP packet
 needs to traverse the OpenThread L3 layer and then Zephyr's L3 layer in order to 
 reach the BSD socket.
 
-Note that if one desires the application can use just the OpenThread API 
-with it's IPv6 stack and even the internal CoAP implementation 
-which is the application protocol.
+.. note:: If one desires the application can use just the OpenThread API 
+          with it's IPv6 stack and even the internal CoAP implementation 
+          which is the application protocol.
+          Such approach reduces the overhead, becouse the packet does not need to go through
+          the Zephyr's stack. This could lead to createing a quicker or more energy efficient application.
+          However it comes at at a cost of limited portability and functionality.
+          Higher level protocols provided by OpenThread are not as advanced comparing to Zephyr's.
+          For example, CoAP implementation does not support observers and the block transfer functionality.
+          Moreover the TCP protocol is not available at all.
 
 File system and shim layer
 **************************
 
 The OpenThread Network Stack is present in the following paths:
-- OpenThread stack location: modules/lib/openthread/
-- OpenThread shim layer location: zephyr/subsys/net/lib/openthread/platform/
-It's responsibilities include:
-- translating the data into the Zephyr's native net_pkt,
-- providing openthread thread body and synchronization API,
-- providinng openthread_send(), openthread_recv() calls which are registered as the L2 interface API,
-- providing a way to initialize the OpenThread stack,
-- implementing callback functions used by the OpenThread stack
+
+* OpenThread stack location: ``modules/lib/openthread/``
+* OpenThread shim layer: 
+  
+  * Thread entry point function, callbacks, utils, L2 registration: ``zephyr/subsys/net/l2/openthread/``
+  * OpenThread platform layer location: ``zephyr/subsys/net/lib/openthread/platform/``
+
+The shim layer responsibilities include:
+
+* translating the data into the Zephyr's native net_pkt,
+* providing openthread thread body and synchronization API,
+* providinng ``openthread_send()``, ``openthread_recv()`` calls which are registered as the L2 interface API,
+* providing a way to initialize the OpenThread stack,
+* implementing callback functions used by the OpenThread stack
 
 The nRF IEEE802.15.4 Radio Driver is present in the following paths:
-- nRF IEEE802.15.4 Radio Driver shim layer location: zephyr/drivers/ieee802154/{ieee802154_nrf5.c/ieee802154_nrf5.h
-- nRF IEEE802.15.4 Radio Driver location: modules/hal/nordic/drivers/nrf_radio_802154
+
+* nRF IEEE802.15.4 Radio Driver shim layer location: ``zephyr/drivers/ieee802154/{ieee802154_nrf5.c/ieee802154_nrf5.h``
+* nRF IEEE802.15.4 Radio Driver location: ``modules/hal/nordic/drivers/nrf_radio_802154``
 The RX connection of the radio driver is done with the interrupt handler 
-registered using the Zephyr's mechanism with the NRF_802154_INTERNAL_RADIO_IRQ_HANDLING=0 defined. 
+registered using the Zephyr's mechanism with the ``NRF_802154_INTERNAL_RADIO_IRQ_HANDLING=0`` defined. 
 The registered IRQ handler uses Zephyr's FIFO to pass the IEEE802.15.4 frame further.
-The 802154 thread runs on the highest cooperative priority and waits on this FIFO. 
+The ``802154 RX`` thread runs on the highest cooperative priority and waits on this FIFO. 
 Once a new frame appears, it continues with the processing.
 
 The TX connection uses the workqueue, which calls the radio driver calls to schedule the transmission.
@@ -46,33 +64,34 @@ Then the RTC IRQ is used to send the frame over the air.
 
 Threads
 *******
-- openthread - responsible for receiving IEEE 802.15.4 frames during reception.
-  When the reassembled traffic turns out to be the IPv6 packet, it calls the ot_receive_handler()
-  which injects it back to the L2 via the net_recv_data(), so that it could later reach the Zephyr's IP stack.
+
+* ``openthread`` - responsible for receiving IEEE 802.15.4 frames during reception.
+  When the reassembled traffic turns out to be the IPv6 packet, it calls the ``ot_receive_handler()``
+  which injects it back to the L2 via the ``net_recv_data()``, so that it could later reach the Zephyr's IP stack.
   During the transmission, its job is to handle the previously scheduled OpenThread Tasklet that contains
   a message to be sent.
 
-- rx_workq - responsible for receiving L2 frames and directing them either to the openthread process
+* ``rx_workq`` - responsible for receiving L2 frames and directing them either to the openthread process
   or the Zephyr's IP stack during reception, depending whether the frame is an IEEE 802.15.4 frame
   or an IPv6 packet.
 
-- tx_workq - responsible for receiving UDP packet and scheduling the OpenThread Tasklet
-  for transmission and unlocking the openthread thread by giving the semaphore.
+* ``tx_workq`` - responsible for receiving UDP packet and scheduling the OpenThread Tasklet
+  for transmission and unlocking the ``openthread`` thread by giving the semaphore.
 
-- workqueue - responsible for invoking the radio driver API in order to schedule a transmission.
+* ``workqueue`` - responsible for invoking the radio driver API in order to schedule a transmission.
 
-- 802154 RX - resposible for the "upper half" processing of the radio frame reception. 
+* ``802154 RX`` - resposible for the "upper half" processing of the radio frame reception. 
   Works on the objects of type ``nrf5_802154_rx_frame`` which are put to the ``nrf5_data.rx_fifo``
   from the RX IRQ context. Then it is responsible of creating the net_pkt structure
-  and passing it the upper layer with the net_recv_data().
+  and passing it the upper layer with the ``net_recv_data()``.
 
 Traffic flow
 ************
-The traffic flow is not fully summetrical for the reception (RX) and the transmission (TX) cases.
+The traffic flow is not fully symmetrical for the reception (RX) and the transmission (TX) cases.
 Each of these flows is described below in an appropriate section.
 
 RX path
-*******
+=======
 An application typically consists of one or more :ref:`threads <threads_v2>`
 that execute the application logic.
 The following figure shows what happens when you are using the :ref:`BSD socket API <bsd_sockets_interface>`.
@@ -83,11 +102,9 @@ The following figure shows what happens when you are using the :ref:`BSD socket 
 
     OpenThread Application RX data flow
 
-Data receiving (RX) - TODO: expand, remove/rephrase copy/paste from the zephyrs RX page.
--------------------
+Data receiving (RX) processing flow:
 
 1. A network data packet is received by a nRF5 IEEE 802.15.4 Radio Driver.
-
 2. The device driver allocates enough network buffers to store the received
    data. The network packet is placed in the proper RX queue (implemented by
    :ref:`k_fifo <fifos_v2>`). By default there is only one receive queue in
@@ -97,44 +114,35 @@ Data receiving (RX) - TODO: expand, remove/rephrase copy/paste from the zephyrs 
    act as a way to separate the data processing pipeline (bottom-half) as
    the device driver is running in an interrupt context and it must do its
    processing as fast as possible.
-
-3. The 802154 RX Radio driver thread does the upper-half processing of the
+3. The 802154 RX Radio driver thread (``802154 RX``) does the upper-half processing of the
    received IEEE 802.15.4 radio frame. As a result it puts a work item
-   with the net_recv_data() to have the frame processed.
-
-4. The work queue thread rx_workq calls the registered handler for every queued frame.
-   In this case the registered handler openthread_recv() checks if the frame is of the 
-   IEEE 802.15.4 type and if it is the case it insertd the frame in the rx_pkt_fifo and returns the NET_OK.
-
+   with the ``net_recv_data()`` to have the frame processed.
+4. The work queue thread ``rx_workq`` calls the registered handler for every queued frame.
+   In this case the registered handler ``openthread_recv()`` checks if the frame is of the 
+   IEEE 802.15.4 type and if it is the case it insertd the frame in the ``rx_pkt_fifo`` and returns the ``NET_OK``.
 5. The OpenThread thread gets a frame from the FIFO and processes it.
    It also handles IP header compression, reassembly of fragmented traffic.
-
 6. As soon as it detects a valid IPv6 packet that needs to be handled by the 
-   higher layer it calls the registered callback ot_receive_handler()
-   which creates a buffer for a net_pkt that is going to be passed to the Zephyr's IP stack
-   and calls the net_recv_data() to have it processed.
-
-7. This time the openthread_recv() called by the work queue returns NET_CONTINUE
+   higher layer it calls the registered callback ``ot_receive_handler()``
+   which creates a buffer for a ``net_pkt`` that is going to be passed to the Zephyr's IP stack
+   and calls the ``net_recv_data()`` to have it processed.
+7. This time the ``openthread_recv()`` called by the work queue returns ``NET_CONTINUE``
    indicating that the valid IPv6 packet is present and needs to be processed by
    the Zephyr's higher layer.
-
-8. The net_ipv6_input() passes the packet the next higher layer.
-
+8. The ``net_ipv6_input()`` passes the packet the next higher layer.
 9. The packet is then passed to L3 processing. If the packet is IP based,
    then the L3 layer processes the IPv6.
-
 10. A socket handler then finds an active socket to which the network packet
    belongs and puts it in a queue for that socket, in order to separate the
    networking code from the application. Typically the application is run in
    userspace context and the network stack is run in kernel context.
-
 11. The application will then receive the data and can process it as needed.
    The application should have used the
    :ref:`BSD socket API <bsd_sockets_interface>` to create a socket
    that will receive the data.
 
 TX path
-*******
+=======
 
 .. figure:: zephyr_netstack_openthread-tx_sequence.svg
     :alt: OpenThread Application TX data flow
@@ -142,30 +150,23 @@ TX path
 
     OpenThread Application TX data flow
 
-Data transmitting (TX)
-
+Data transmitting (TX) processing flow:
 
 1. The application uses the
    :ref:`BSD socket API <bsd_sockets_interface>` when sending the data.
    However, direct interaction with the OpenThread API is possible - e.g.
    to utilize it's CoAP implementation.
-
 2. The application data is prepared for sending to kernel space and then
    copied to internal net_buf structures.
-
 3. Depending on the socket type, a protocol header is added in front of the
    data. For example, if the socket is a UDP socket, then a UDP header is
    constructed and placed in front of the data.
-
-4. A UDP net_pkt is queued to be processed with the process_tx_packet().
+4. A UDP ``net_pkt`` is queued to be processed with the ``process_tx_packet()``.
    In the call chain the openthread_send() is called wchich converts the
    net_pkt to the otMessage format and invokes the otIp6Send().
    In this step the message is processed by the OpenThread's stack.
-
 5. The tasklet to schedule the transmission is posted and semaphore unlocking the
    openthread thread is given. Mac and Submac operations take place here.
-
 6. The openthread thread creates and schedules a work item used to transmit 
    the IEEE802.15.4 frame.
-
 7. The nRF5 IEEE 802.15.4 Radio Driver sends the packet.
