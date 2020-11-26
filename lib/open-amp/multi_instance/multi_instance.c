@@ -291,7 +291,7 @@ static int rpmsg_virtio_return_buffer(struct rpmsg_virtio_device * p_rvdev,
  *
  * @return None.
  */
-static void ipm_callback(struct device *ipmdev, void * context,
+static void ipm_callback(const struct device *ipmdev, void * context,
                          uint32_t id, volatile void * data)
 {
     struct ipc_inst_t * p_ipm = (struct ipc_inst_t*) context;
@@ -695,7 +695,7 @@ int ipc_recv(struct ipc_inst_t * p_ipm, void * payload)
     return 0;
 }
 
-static int ipc_config_verify(struct device *unused)
+static int ipc_config_verify(const struct device *unused)
 {
 	ARG_UNUSED(unused);
 
