@@ -138,8 +138,8 @@ struct ipc_inst_t
                                      application that msg has arrived. */
     void * arg;                 /* Custom parameter. User can use it. */
 
-    struct device              * ipm_tx_handle; /* TX handler */
-    struct device              * ipm_rx_handle; /* RX handler */
+    const struct device        * ipm_tx_handle; /* TX handler */
+    const struct device        * ipm_rx_handle; /* RX handler */
 
     uint32_t                     shmem_status_reg_addr;
     struct rpmsg_virtio_device   rvdev;
