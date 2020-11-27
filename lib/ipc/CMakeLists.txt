@@ -6,4 +6,4 @@
 #
 
 add_subdirectory(resource_table)
-add_subdirectory(multi_instance)
+add_subdirectory(openamp)
