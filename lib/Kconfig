@@ -17,6 +17,6 @@ source "lib/os/Kconfig"
 
 source "lib/posix/Kconfig"
 
-source "lib/open-amp/Kconfig"
+source "lib/ipc/Kconfig"
 
 endmenu

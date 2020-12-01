@@ -7,7 +7,7 @@
 
 choice IPC_ROLE
 	prompt "Device role in IPC communication"
-	default IPC_ROLE_SLAVE
+	default IPC_ROLE_REMOTE
 
 config IPC_ROLE_REMOTE
 	bool "Remote"
@@ -42,11 +42,10 @@ config IPC_COPY_NO_BLOCKING
       Enables no-copy mechanism for obtaining IPC messages.
 
 config IPC_BACKEND_OPENAMP
-	prompt "Enable OpenAMP IPC backend"
+	bool "Enable OpenAMP IPC backend"
 	imply OPENAMP
 	# Depends on TODO.
-	# default y if TODO
-	default n
+	default false
 	help
       When enabled the OpenAMP backend is used
 	  to communicate with the co-processor.
@@ -67,17 +66,5 @@ config OPENAMP_RSC_TABLE_NUM_RPMSG_BUFF
 	help
 	  This option specifies the number of buffer used in a Vring for
 	  interprocessor communication
-
-config OPENAMP_MULTIINSTANCE
-	bool "IPC multi instance library."
-	imply OPENAMP
-	help
-	  Enable multiinstance IPC library.
-
-if OPENAMP_MULTIINSTANCE
-# RPMSG device role.
-
-
-endif # OPENAMP_MULTIINSTANCE
 
 endif # IPC_BACKEND_OPENAMP

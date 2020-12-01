@@ -23,7 +23,7 @@ static K_SEM_DEFINE(ready_sem, 0, 1);
 static K_SEM_DEFINE(rx_sem, 0, 1);
 
 static K_KERNEL_STACK_DEFINE(bt_rpmsg_rx_thread_stack,
-			     CONFIG_BT_RPMSG_NRF53_RX_STACK_SIZE);
+			     CONFIG_BT_IPC_RX_STACK_SIZE);
 static struct k_thread bt_rpmsg_rx_thread_data;
 
 struct ipc_inst_t ipc = { 0 };
@@ -100,7 +100,7 @@ int bt_rpmsg_platform_init(void)
 	k_thread_create(&bt_rpmsg_rx_thread_data, bt_rpmsg_rx_thread_stack,
 			K_KERNEL_STACK_SIZEOF(bt_rpmsg_rx_thread_stack),
 			bt_rpmsg_rx_thread, NULL, NULL, NULL,
-			K_PRIO_COOP(CONFIG_BT_RPMSG_NRF53_RX_PRIO),
+			K_PRIO_COOP(CONFIG_BT_IPC_RX_PRIO),
 			0, K_NO_WAIT);
 
 	/* Initialize IPC instances. */

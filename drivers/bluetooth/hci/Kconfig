@@ -30,11 +30,11 @@ config BT_H5
 	  Bluetooth three-wire (H:5) UART driver. Implementation of HCI
 	  Three-Wire UART Transport Layer.
 
-config BT_IPC_RPMSG
-	bool "HCI using RPMsg"
+config BT_IPC
+	bool "HCI using IPC"
+	#depends on PISZ TODO
 	help
-	  Bluetooth HCI driver for communication with another CPU
-	  using RPMsg framework.
+	  Bluetooth HCI driver for communication with another CPU.
 
 config BT_SPI
 	bool "SPI HCI"
@@ -108,27 +108,30 @@ config BT_STM32_IPM_RX_STACK_SIZE
 	depends on BT_STM32_IPM
 	default 512
 
-config BT_IPC_HCI
-    bool "IPC for BT HCI in nRF53"
-	select IPM
-	select IPM_NRFX
-	select IPM_MSG_CH_1_ENABLE
-	select IPM_MSG_CH_0_ENABLE
-	select IPM_MSG_CH_0_TX
-	select IPM_MSG_CH_1_RX
-	select BT_IPC_NRF53_RPMSG
+#config BT_IPC
+#    bool "IPC for BT HCI in nRF53"
+#	default y if SOC_NRF5340_CPUAPP
+#	#TODO pisz and BLE ?
+#	select IPM
+#	select IPM_NRFX
+#	#TODO PISZ set channels based on configuration
+#	select IPM_MSG_CH_1_ENABLE
+#	select IPM_MSG_CH_0_ENABLE
+#	select IPM_MSG_CH_0_TX
+#	select IPM_MSG_CH_1_RX
+#	#depends on BT_IPC_NRF53_RPMSG
 
-config BT_IPC_NRF53_RPMSG
-	bool "nRF53 configuration of RPMsg"
-	default y if SOC_NRF5340_CPUAPP
-	depends on BT_IPC_RPMSG
+#config BT_IPC_NRF53_RPMSG
+#	bool "nRF53 configuration of RPMsg"
+#	default y if SOC_NRF5340_CPUAPP
+#	depends on BT_IPC_RPMSG
+#
+#	select IPC_BACKEND_OPENAMP
+#	help
+#	  Enable RPMsg configuration for nRF53. Two channels of the IPM driver
+#	  are used in the HCI driver: channel 0 for TX and channel 1 for RX.
 
-	#select IPC_BACKEND_OPENAMP
-	help
-	  Enable RPMsg configuration for nRF53. Two channels of the IPM driver
-	  are used in the HCI driver: channel 0 for TX and channel 1 for RX.
-
-if BT_IPC_HCI
+if BT_IPC
 
 config BT_IPC_RX_STACK_SIZE
 	int "Stack size for IPC RX thread"
@@ -138,7 +141,29 @@ config BT_IPC_RX_PRIO
 	int "IPC RX thread priority"
 	default 8
 
-endif # BT_IPC_HCI
+choice
+	prompt "IPC communication backend to communicate with the co-processor"
+	default BT_IPC_BACKEND_OPENAMP
+
+config BT_IPC_BACKEND_OPENAMP
+	bool "OpenAMP IPC backend"
+	help
+	  TODO PISZ
+	select IPC_BACKEND_OPENAMP
+
+endchoice
+
+config BT_IPC_IPM_DOWNSTREAM_CHANNEL
+	int "IPM channel for CPU_APP to CPU_NET communication"
+	default 0
+	#TODO PISZ check if the number is limited, or int is a good idea
+
+config BT_IPC_IPM_UPSTREAM_CHANNEL
+	int "IPM channel for CPU_NET to CPU_APP communication"
+	default 1
+	#TODO PISZ check if the number is limited, or int is a good idea
+
+endif # BT_IPC
 
 config BT_DRIVER_QUIRK_NO_AUTO_DLE
 	bool "Host auto-initiated Data Length Update quirk"

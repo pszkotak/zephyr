@@ -431,7 +431,7 @@ int ipc_init(struct ipc_inst_t         * p_ipm,
     p_ipm->rvrings[IPC_VQ_1].vq = p_ipm->vq[IPC_VQ_1];
 
     p_ipm->vdev.role = IS_ENABLED(CONFIG_RPMSG_MASTER) ?
-                                  RPMSG_MASTER : RPMSG_REMOTE;
+                                  IPC_MASTER : RPMSG_REMOTE;
 
     p_ipm->vdev.vrings_num = VRING_COUNT;
     p_ipm->vdev.func = &dispatch;
