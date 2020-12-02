@@ -7,7 +7,7 @@
 
 config IPC
     bool "IPC support"
-	default y if IPC_BACKEND_OPENAMP
+	default n
 	help 
 	  This enables generic multiinstance interprocessor communications.
 
@@ -15,17 +15,16 @@ if IPC
 
 choice IPC_ROLE
 	prompt "Device role in IPC communication"
-	default IPC_ROLE_SLAVE
+	default IPC_ROLE_MASTER if IPC_MASTER
+	default IPC_ROLE_SLAVE if IPC_SLAVE
 
 config IPC_ROLE_SLAVE
 	select WITH_VIRTIO_SLAVE
-	#TODO PISZ DEPENDENCY FIX
-	bool "Slave"
+	bool "IPC Role Slave"
 
 config IPC_ROLE_MASTER
 	select WITH_VIRTIO_MASTER
-	#TODO PISZ DEPENDENCY FIX
-	bool "Master"
+	bool "IPC Role Master"
 
 endchoice
 

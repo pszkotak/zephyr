@@ -20,22 +20,13 @@ config BOARD_ENABLE_DCDC_HV
 	select SOC_DCDC_NRF53X_HV
 	default y
 
-choice
-	prompt "Co-processor role in the IPC communication"
-	default IPC_MASTER if IPC_BACKEND_OPENAMP
-	#TODO PISZ does it make sense? when SLAVE? 
-
 config IPC_MASTER
-	bool "TODO PISZ"
-	help
-	  TODO PISZ
+    bool
+	default y if SOC_NRF5340_CPUAPP
 
-config IPC_REMOTE
-	bool "TODO PISZ"
-	help
-	  TODO PISZ
-
-endchoice
+config IPC_SLAVE
+    bool
+	default y if SOC_NRF5340_CPUNET
 
 choice BT_HCI_BUS_TYPE
 	default BT_IPC if BT

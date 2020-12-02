@@ -32,7 +32,7 @@ config BT_H5
 
 config BT_IPC
 	bool "HCI using IPC"
-	#depends on PISZ TODO
+	select IPC
 	help
 	  Bluetooth HCI driver for communication with another CPU.
 
