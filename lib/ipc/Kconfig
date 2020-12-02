@@ -5,14 +5,26 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+config IPC
+    bool "IPC support"
+	default y if IPC_BACKEND_OPENAMP
+	help 
+	  This enables generic multiinstance interprocessor communications.
+
+if IPC
+
 choice IPC_ROLE
 	prompt "Device role in IPC communication"
-	default IPC_ROLE_REMOTE
+	default IPC_ROLE_SLAVE
 
-config IPC_ROLE_REMOTE
-	bool "Remote"
+config IPC_ROLE_SLAVE
+	select WITH_VIRTIO_SLAVE
+	#TODO PISZ DEPENDENCY FIX
+	bool "Slave"
 
 config IPC_ROLE_MASTER
+	select WITH_VIRTIO_MASTER
+	#TODO PISZ DEPENDENCY FIX
 	bool "Master"
 
 endchoice
@@ -44,7 +56,7 @@ config IPC_COPY_NO_BLOCKING
 config IPC_BACKEND_OPENAMP
 	bool "Enable OpenAMP IPC backend"
 	imply OPENAMP
-	# Depends on TODO.
+	depends on IPC
 	default false
 	help
       When enabled the OpenAMP backend is used
@@ -68,3 +80,5 @@ config OPENAMP_RSC_TABLE_NUM_RPMSG_BUFF
 	  interprocessor communication
 
 endif # IPC_BACKEND_OPENAMP
+
+endif # IPC
