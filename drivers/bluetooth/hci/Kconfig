@@ -32,7 +32,6 @@ config BT_H5
 
 config BT_IPC
 	bool "HCI using IPC"
-	select IPC
 	help
 	  Bluetooth HCI driver for communication with another CPU.
 
@@ -141,15 +140,17 @@ config BT_IPC_RX_PRIO
 	int "IPC RX thread priority"
 	default 8
 
-choice
-	prompt "IPC communication backend to communicate with the co-processor"
+choice BT_IPC_BACKEND
+	prompt "IPC backend to communicate with the BLE controller co-processor"
 	default BT_IPC_BACKEND_OPENAMP
+	depends on BT_IPC
 
 config BT_IPC_BACKEND_OPENAMP
 	bool "OpenAMP IPC backend"
+	depends on BT_IPC
+	select OPENAMP
 	help
 	  TODO PISZ
-	select IPC_BACKEND_OPENAMP
 
 endchoice
 

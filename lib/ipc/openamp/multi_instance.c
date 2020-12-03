@@ -72,7 +72,7 @@ static unsigned char virtio_get_status(struct virtio_device * p_vdev)
                                                    struct ipc_inst_t,
                                                    vdev);
 
-    return (IS_ENABLED(CONFIG_RPMSG_MASTER) ?
+    return (IS_ENABLED(CONFIG_IPC_ROLE_MASTER) ?
             VIRTIO_CONFIG_STATUS_DRIVER_OK :
             sys_read8(p_ipc->shmem_status_reg_addr));
 }
@@ -88,7 +88,7 @@ static uint32_t virtio_get_features(struct virtio_device * vdev)
     return BIT(VIRTIO_RPMSG_F_NS);
 }
 
-#ifdef CONFIG_RPMSG_MASTER
+#ifdef CONFIG_IPC_ROLE_MASTER
 /** @brief Function for setting virtio status.
  *
  * @param[in] vdev   Pointer to virtio device structure.
@@ -149,7 +149,7 @@ const struct virtio_dispatch dispatch =
 {
     .get_status = virtio_get_status,
     .get_features = virtio_get_features,
-#ifdef CONFIG_RPMSG_MASTER
+#ifdef IPC_ROLE_MASTER
     .set_status = virtio_set_status,
     .set_features = virtio_set_features,
 #endif
@@ -239,7 +239,7 @@ static void* rpmsg_virtio_get_rx_buffer(struct rpmsg_virtio_device * p_rvdev,
                                         size_t                     * len,
                                         uint16_t                   * idx)
 {
-    return (IS_ENABLED(CONFIG_RPMSG_MASTER) ?
+    return (IS_ENABLED(CONFIG_IPC_ROLE_MASTER) ?
                        virtqueue_get_buffer(p_rvdev->rvq, len, idx) :
                        virtqueue_get_available_buffer(p_rvdev->rvq, idx, len));
 }
@@ -261,7 +261,7 @@ static int rpmsg_virtio_return_buffer(struct rpmsg_virtio_device * p_rvdev,
                                        uint16_t                    idx)
 {
     int status = 0;
-    if (IS_ENABLED(CONFIG_RPMSG_MASTER))
+    if (IS_ENABLED(CONFIG_IPC_ROLE_MASTER))
     {
         struct virtqueue_buf vqbuf;
 
@@ -430,14 +430,14 @@ int ipc_init(struct ipc_inst_t         * p_ipm,
     p_ipm->rvrings[IPC_VQ_1].info.align = VRING_ALIGNMENT;
     p_ipm->rvrings[IPC_VQ_1].vq = p_ipm->vq[IPC_VQ_1];
 
-    p_ipm->vdev.role = IS_ENABLED(CONFIG_RPMSG_MASTER) ?
-                                  IPC_MASTER : RPMSG_REMOTE;
+    p_ipm->vdev.role = IS_ENABLED(CONFIG_IPC_ROLE_MASTER) ?
+                                  RPMSG_MASTER : RPMSG_REMOTE;
 
     p_ipm->vdev.vrings_num = VRING_COUNT;
     p_ipm->vdev.func = &dispatch;
     p_ipm->vdev.vrings_info = &p_ipm->rvrings[0];
 
-    if (IS_ENABLED(CONFIG_RPMSG_MASTER))
+    if (IS_ENABLED(CONFIG_IPC_ROLE_MASTER))
     {
         /* This step is only required if you are VirtIO device master.
          * Initialize the shared buffers pool. */
@@ -575,7 +575,7 @@ int ipc_send(struct ipc_ept_t * p_ept, const void * p_buff, size_t size)
 
 int ipc_free(struct ipc_inst_t * p_ipm)
 {
-    struct virtio_device * vdev = (IS_ENABLED(CONFIG_RPMSG_MASTER) ?
+    struct virtio_device * vdev = (IS_ENABLED(CONFIG_IPC_ROLE_MASTER) ?
                                               p_ipm->vq[0]->vq_dev :
                                               p_ipm->vq[1]->vq_dev);
     struct rpmsg_virtio_device * rvdev = vdev->priv;
@@ -604,7 +604,7 @@ int ipc_free(struct ipc_inst_t * p_ipm)
 
 int ipc_recv(struct ipc_inst_t * p_ipm, void * payload)
 {
-    struct virtio_device * vdev = (IS_ENABLED(CONFIG_RPMSG_MASTER) ?
+    struct virtio_device * vdev = (IS_ENABLED(CONFIG_IPC_ROLE_MASTER) ?
                                               p_ipm->vq[0]->vq_dev :
                                               p_ipm->vq[1]->vq_dev);
     struct rpmsg_virtio_device * rvdev = vdev->priv;

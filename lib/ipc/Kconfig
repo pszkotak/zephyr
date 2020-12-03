@@ -7,7 +7,8 @@
 
 config IPC
     bool "IPC support"
-	default n
+	default y
+	#TODO PISZ set in bluetooth or 53
 	help 
 	  This enables generic multiinstance interprocessor communications.
 
@@ -19,11 +20,11 @@ choice IPC_ROLE
 	default IPC_ROLE_SLAVE if IPC_SLAVE
 
 config IPC_ROLE_SLAVE
-	select WITH_VIRTIO_SLAVE
+    select OPENAMP_SLAVE
 	bool "IPC Role Slave"
 
 config IPC_ROLE_MASTER
-	select WITH_VIRTIO_MASTER
+	select OPENAMP_MASTER
 	bool "IPC Role Master"
 
 endchoice
@@ -36,7 +37,7 @@ config IPC_INSTANCES_NO
 
 config IPC_ENDPOINTS_NO
     int "Total number of used endpoints."
-    default 0
+    default 2
     help
       Number of used endpoints.
 
@@ -54,8 +55,7 @@ config IPC_COPY_NO_BLOCKING
 
 config IPC_BACKEND_OPENAMP
 	bool "Enable OpenAMP IPC backend"
-	imply OPENAMP
-	depends on IPC
+	select OPENAMP
 	default false
 	help
       When enabled the OpenAMP backend is used
