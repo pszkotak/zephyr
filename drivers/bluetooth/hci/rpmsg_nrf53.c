@@ -60,9 +60,18 @@ const struct ipc_config_t ipc_conf =
 {
     .ipm_name_rx = "IPM_1",
     .ipm_name_tx = "IPM_0",
-    .vring_size = VRING_SIZE,
-    .shmem_addr = SHMEM_INST_ADDR_GET(SHM_START_ADDR, VRING_SIZE, 0),
-    .shmem_size = SHMEM_INST_SIZE_GET(VRING_SIZE),
+
+	// function pointers, ifdef MASTER/SLAVE
+	// .ipc_pre_inint = 
+	// .ipc_post_init = 
+	// .ep_handler =
+	// .msg_ntf_cb =
+	// .msg_send   =
+
+	// TODO to be removed or the instance needs to be put in RAM
+    // .vring_size = VRING_SIZE,
+    // .shmem_addr = SHMEM_INST_ADDR_GET(SHM_START_ADDR, VRING_SIZE, 0),
+    // .shmem_size = SHMEM_INST_SIZE_GET(VRING_SIZE),
 };
 struct ipc_ept_config_t ept_conf =
 {
@@ -131,4 +140,4 @@ int bt_rpmsg_platform_send(struct net_buf *buf)
 	return ipc_send(&ep, buf->data, buf->len);
 }
 
-IPC_INST_CONFIG_DEF(bt_hci, "bt_hci", 128, 1024);
+IPC_INST_CONFIG_DEF(bt_hci, "bt_hci", "IPM_0", "IPM_1");

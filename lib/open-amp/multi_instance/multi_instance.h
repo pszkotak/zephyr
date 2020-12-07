@@ -125,10 +125,17 @@ struct ipc_config_t
 	char *name; /* Name of the configuration. */ 
     const char * ipm_name_tx; /* Name of the TX IPM channel. */
     const char * ipm_name_rx; /* Name of the RX IPM channel. */
-    uint8_t      vring_size;  /* Number of used slots in virtqueue. */
-    uint32_t     shmem_addr;  /* Address of the assigned shared memory region for
-                                 that particular instance. */
-    uint32_t     shmem_size;  /* Size of the assigned shared memory for that instance. */
+    //TODO typedefs for function pointers:
+    // ipc_pre_inint
+	// ipc_post_init
+	// ep_handle
+	// msg_ntf_c
+	// msg_send 
+
+    // uint8_t      vring_size;  /* Number of used slots in virtqueue. */
+    // uint32_t     shmem_addr;  /* Address of the assigned shared memory region for
+    //                              that particular instance. */
+    // uint32_t     shmem_size;  /* Size of the assigned shared memory for that instance. */
 };
 
 /** @brief IPC structure. */
@@ -284,15 +291,19 @@ struct ipc_ept_t * ipc_endpoint_get_next_free(void);
 struct ipc_inst_t * ipc_inst_get_next_free(void);
 
 #endif /* CONFIG_IPC_AUTO_SHMEM_ALLOCATE */
-// TODO value, shmem_addr needs to be calculated
 
-#define IPC_INST_CONFIG_DEF(_name, _config_name, _vring_size, _shmem_size) \
+// TODO limit number of parameters, separate structure with callbacks?
+#define IPC_INST_CONFIG_DEF(_name, _config_name, _rx_ipm_ch_num, _tx_ipm_ch_num,
+        _ipc_pre_inint, _ipc_post_init, _ep_handler, , _msg_ntf_cb, _msg_send) \
 	const Z_STRUCT_SECTION_ITERABLE(ipc_config_t, _name##_ipc_config) = { \
 		.name = _config_name, \
-        .ipm_name_tx = "_name##_ipm_tx", \
-        .ipm_name_rx = "_name##_ipm_rx", \
-        .vring_size = _vring_size,  \
-        .shmem_size = _shmem_size, \
+        .ipm_name_rx = _rx_ipm_ch_num, \
+        .ipm_name_tx = _tx_ipm_ch_num, \
+        .ipc_pre_inint = _ipc_pre_inint, \
+	    .ipc_post_init = _ipc_post_init, \
+	    .ep_handler = _ep_handler, \
+	    .msg_ntf_cb = _msg_ntf_cb, \
+	    .msg_send   = _msg_send, \
 	}
 
 #ifdef __cplusplus

@@ -24,7 +24,8 @@
 
 #include "multi_instance.h"
 
-#define LOG_LEVEL LOG_LEVEL_DBG
+//#define LOG_LEVEL LOG_LEVEL_DBG
+#define LOG_LEVEL 3U
 #define LOG_MODULE_NAME hci_rpmsg
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 

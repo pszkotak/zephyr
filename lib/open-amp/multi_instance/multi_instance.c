@@ -695,19 +695,40 @@ int ipc_recv(struct ipc_inst_t * p_ipm, void * payload)
     return 0;
 }
 
-static int ipc_config_verify(const struct device *unused)
-{
-	ARG_UNUSED(unused);
+static size_t ipc_instances_count(void)
+{  
+    size_t count = 0;
 
-	LOG_INF("IPC Configuration verification");
 
 	Z_STRUCT_SECTION_FOREACH(ipc_config_t, ipc_config) {
-		LOG_INF("%s IPC configuration registered", ipc_config->name);
-        LOG_INF("IPC IPM: %s, %s", ipc_config->ipm_name_tx, ipc_config->ipm_name_rx);
+        count++;
 	}
-	//k_oops();
+	LOG_INF("IPC configurations: %d", count);
 
-	return 0;
+	return count;
 }
 
-SYS_INIT(ipc_config_verify, POST_KERNEL, 30);
+static int ipc_instances_initialize(const struct device *unused)
+{
+    ARG_UNUSED(unused);
+
+    LOG_ERR("Multiinstance IPC init, %d", ipc_instances_count());
+
+    Z_STRUCT_SECTION_FOREACH(ipc_config_t, ipc_config) {
+        // Create thread
+        //ipc_config->ipc_pre_init();
+
+        //initialize single instance
+        //ipc_init()
+
+        //ipc_ept_init()
+
+        //wait on semaphore?
+        //ipc_config->ipc_post_init()
+	}
+
+    return 0;
+}
+
+// SYS_INIT(ipc_config_verify, POST_KERNEL, 30);
+SYS_INIT(ipc_instances_initialize, POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT); //TODO set correct prio
