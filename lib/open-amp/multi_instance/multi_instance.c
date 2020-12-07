@@ -703,6 +703,7 @@ static int ipc_config_verify(const struct device *unused)
 
 	Z_STRUCT_SECTION_FOREACH(ipc_config_t, ipc_config) {
 		LOG_INF("%s IPC configuration registered", ipc_config->name);
+        LOG_INF("IPC IPM: %s, %s", ipc_config->ipm_name_tx, ipc_config->ipm_name_rx);
 	}
 	//k_oops();
 

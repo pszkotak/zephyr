@@ -284,10 +284,15 @@ struct ipc_ept_t * ipc_endpoint_get_next_free(void);
 struct ipc_inst_t * ipc_inst_get_next_free(void);
 
 #endif /* CONFIG_IPC_AUTO_SHMEM_ALLOCATE */
+// TODO value, shmem_addr needs to be calculated
 
-#define IPC_INST_CONFIG_DEF(_name, _config_name) \
+#define IPC_INST_CONFIG_DEF(_name, _config_name, _vring_size, _shmem_size) \
 	const Z_STRUCT_SECTION_ITERABLE(ipc_config_t, _name##_ipc_config) = { \
 		.name = _config_name, \
+        .ipm_name_tx = "_name##_ipm_tx", \
+        .ipm_name_rx = "_name##_ipm_rx", \
+        .vring_size = _vring_size,  \
+        .shmem_size = _shmem_size, \
 	}
 
 #ifdef __cplusplus
