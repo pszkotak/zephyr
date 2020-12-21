@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2020, STMicroelectronics
+# Copyright (c) 2020, Nordic Semiconductor ASA
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,3 +19,11 @@ config OPENAMP_RSC_TABLE_NUM_RPMSG_BUFF
 	help
 	  This option specifies the number of buffer used in a Vring for
 	  interprocessor communication
+
+config OPENAMP_INSTANCES_NUM
+	int "Number of open-amp instances."
+	default 2 if BT_RPMSG_NRF53 && NRF_802154_SER_HOST
+	default 2 if BT_HCI_RAW && NRF_802154_SER_RADIO
+	default 1
+	help
+	  How many instances are to be used.
