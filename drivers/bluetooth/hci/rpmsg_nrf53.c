@@ -10,6 +10,7 @@
 #include <metal/sys.h>
 #include <metal/device.h>
 #include <metal/alloc.h>
+#include <openamp/multi_instance.h>
 
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_DEBUG_HCI_DRIVER)
 #define LOG_MODULE_NAME bt_hci_driver_nrf53
@@ -28,41 +29,45 @@ static const struct device *ipm_tx_handle;
 static const struct device *ipm_rx_handle;
 
 /* Configuration defines */
+#define INST_NO			0
 
-#define SHM_NODE            DT_CHOSEN(zephyr_ipc_shm)
-#define SHM_BASE_ADDRESS    DT_REG_ADDR(SHM_NODE)
+#define SHM_NODE		DT_CHOSEN(zephyr_ipc_shm)
+#define SHM_START_ADDR		DT_REG_ADDR(SHM_NODE)
+#define SHM_SIZE		DT_REG_SIZE(SHM_NODE)
 
-#define SHM_START_ADDR      (SHM_BASE_ADDRESS + 0x400)
-#define SHM_SIZE            0x7c00
-#define SHM_DEVICE_NAME     "sram0.shm"
+#define SHM_INST_ADDR                                                          \
+	SHMEM_INST_ADDR_AUTOALLOC_GET(SHM_START_ADDR, SHM_SIZE, INST_NO)
+#define SHM_INST_SIZE		SHMEM_INST_SIZE_AUTOALLOC_GET(SHM_SIZE)
+#define SHM_DEVICE_NAME		"sramx.shm"
 
-BUILD_ASSERT((SHM_START_ADDR + SHM_SIZE - SHM_BASE_ADDRESS)
-		<= DT_REG_SIZE(SHM_NODE),
-	"Allocated size exceeds available shared memory reserved for IPC");
+#define VRING_COUNT		2
+#define VRING_SIZE		VRING_SIZE_GET(SHM_SIZE)
+#define RPMSG_REG_SIZE		(VRING_COUNT * VIRTQUEUE_SIZE_GET(VRING_SIZE))
+#define VRING_REGION_SIZE	VRING_SIZE_COMPUTE(VRING_SIZE, VRING_ALIGNMENT)
 
-#define VRING_COUNT         2
-#define VRING_TX_ADDRESS    (SHM_START_ADDR + SHM_SIZE - 0x400)
-#define VRING_RX_ADDRESS    (VRING_TX_ADDRESS - 0x400)
-#define VRING_ALIGNMENT     4
-#define VRING_SIZE          16
+#define SHM_LOCAL_START_ADDR	(SHM_INST_ADDR + VDEV_STATUS_SIZE)
+#define SHM_LOCAL_SIZE		(SHM_INST_SIZE - VDEV_STATUS_SIZE)
 
-#define VDEV_STATUS_ADDR    SHM_BASE_ADDRESS
+#define VRING_RX_ADDRESS	(SHM_LOCAL_START_ADDR + RPMSG_REG_SIZE)
+#define VRING_TX_ADDRESS	(VRING_RX_ADDRESS + VRING_REGION_SIZE)
+
+#define STATUS_ADDR		SHM_INST_ADDR
 
 BUILD_ASSERT(CONFIG_HEAP_MEM_POOL_SIZE >= 1024,
 	"Not enough heap memory for RPMsg queue allocation");
 
 /* End of configuration defines */
 
-static metal_phys_addr_t shm_physmap[] = { SHM_START_ADDR };
+static metal_phys_addr_t shm_physmap[] = { SHM_LOCAL_START_ADDR };
 static struct metal_device shm_device = {
 	.name = SHM_DEVICE_NAME,
 	.bus = NULL,
 	.num_regions = 1,
 	.regions = {
 		{
-			.virt       = (void *) SHM_START_ADDR,
+			.virt       = (void *) SHM_LOCAL_START_ADDR,
 			.physmap    = shm_physmap,
-			.size       = SHM_SIZE,
+			.size       = SHM_LOCAL_SIZE,
 			.page_shift = 0xffffffff,
 			.page_mask  = 0xffffffff,
 			.mem_flags  = 0,
@@ -84,7 +89,7 @@ static unsigned char virtio_get_status(struct virtio_device *vdev)
 
 static void virtio_set_status(struct virtio_device *vdev, unsigned char status)
 {
-	sys_write8(status, VDEV_STATUS_ADDR);
+	sys_write8(status, STATUS_ADDR);
 }
 
 static uint32_t virtio_get_features(struct virtio_device *vdev)
@@ -255,7 +260,8 @@ int bt_rpmsg_platform_init(void)
 	vdev.func = &dispatch;
 	vdev.vrings_info = &rvrings[0];
 
-	rpmsg_virtio_init_shm_pool(&shpool, (void *)SHM_START_ADDR, SHM_SIZE);
+	rpmsg_virtio_init_shm_pool(&shpool, (void *)shm_device.regions->virt,
+				   shm_device.regions->size);
 	err = rpmsg_init_vdev(&rvdev, &vdev, ns_bind_cb, io, &shpool);
 	if (err) {
 		BT_ERR("rpmsg_init_vdev failed %d", err);
