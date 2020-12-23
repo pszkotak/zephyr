@@ -44,7 +44,11 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME, CONFIG_OPENTHREAD_L2_LOG_LEVEL);
 #define FRAME_TYPE_MASK 0x07
 #define FRAME_TYPE_ACK 0x02
 
+#if IS_ENABLED(CONFIG_NRF_802154_SER_HOST)
+#define OT_WORKER_STACK_SIZE 640
+#else
 #define OT_WORKER_STACK_SIZE 512
+#endif
 
 #if IS_ENABLED(CONFIG_NET_TC_THREAD_COOPERATIVE)
 #define OT_WORKER_PRIORITY   K_PRIO_COOP(CONFIG_OPENTHREAD_THREAD_PRIORITY)
@@ -227,6 +231,7 @@ void platformRadioInit(void)
 	k_work_q_start(&ot_work_q, ot_task_stack,
 		       K_KERNEL_STACK_SIZEOF(ot_task_stack),
 		       OT_WORKER_PRIORITY);
+	k_thread_name_set(&ot_work_q.thread, "ot_work_queue");
 
 	if ((radio_api->get_capabilities(radio_dev) &
 	     IEEE802154_HW_TX_RX_ACK) != IEEE802154_HW_TX_RX_ACK) {
