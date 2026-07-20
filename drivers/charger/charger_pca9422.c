@@ -76,6 +76,10 @@ LOG_MODULE_REGISTER(pca9422_charger, CONFIG_CHARGER_LOG_LEVEL);
 #define PCA9422_BIT_VBAT_OVP        BIT(1)
 #define PCA9422_BIT_NO_BATTERY      BIT(0)
 
+#define PCA9422_CHARGER_THERM_MASK                                                                 \
+	(PCA9422_BIT_THERM_HOT | PCA9422_BIT_THERM_WARM_PLUS | PCA9422_BIT_THERM_WARM |            \
+	 PCA9422_BIT_THERM_COOL | PCA9422_BIT_THERM_COLD)
+
 #define PCA9422_REG_CHARGER_2_STS       0x6CU
 #define PCA9422_BIT_RECHARGE            BIT(7)
 #define PCA9422_BIT_CHARGE_DONE         BIT(6)
@@ -187,6 +191,8 @@ enum {
 	CHG_CURRENT_STEP_5P0MA,
 };
 
+#define NEW_I_VBAT_AT_10C_25PCT 3U /* 0b11, 25% of the Ifast_chg */
+
 #define CURRENT_STEP_2P5MA_MIN_UA 2500   /* 2.5mA */
 #define CURRENT_STEP_2P5MA_MAX_UA 320000 /* 320mA */
 #define CURRENT_STEP_5P0MA_MAX_UA 640000 /* 640mA */
@@ -204,6 +210,8 @@ struct charger_pca9422_config {
 	const struct device *mfd;
 	uint32_t vin_i_limit_ua;
 	uint32_t vsys_reg_uv;
+	uint32_t cool_i_fast_chg_ua;
+	bool cool_i_fast_chg_enabled;
 };
 
 struct charger_pca9422_data {
@@ -298,8 +306,9 @@ static int pca9422_charger_get_online(const struct device *dev, enum charger_onl
 	return 0;
 }
 
-static int pca9422_charger_set_constant_charge_current(const struct device *dev,
-						       uint32_t current_ua)
+static int pca9422_charger_apply_temp_charge_current(const struct device *dev);
+
+static int pca9422_charger_write_fast_charge_current(const struct device *dev, uint32_t current_ua)
 {
 	const struct charger_pca9422_config *const config = dev->config;
 	struct charger_pca9422_data *data = dev->data;
@@ -348,9 +357,6 @@ static int pca9422_charger_set_constant_charge_current(const struct device *dev,
 		goto lock;
 	}
 	ret = mfd_pca9422_reg_write_byte(config->mfd, PCA9422_REG_CHARGER_CNTL_3, (uint8_t)idx);
-	if (ret == 0) {
-		data->i_fast_chg_ua = current_ua;
-	}
 
 lock:
 	/* Lock charger control register */
@@ -361,6 +367,55 @@ lock:
 	k_mutex_unlock(&data->mutex);
 
 	return ret;
+}
+
+static int pca9422_charger_set_constant_charge_current(const struct device *dev,
+						       uint32_t current_ua)
+{
+	struct charger_pca9422_data *data = dev->data;
+	int ret;
+
+	current_ua = CLAMP(current_ua, CURRENT_STEP_2P5MA_MIN_UA, CURRENT_STEP_5P0MA_MAX_UA);
+
+	ret = pca9422_charger_write_fast_charge_current(dev, current_ua);
+	if (ret == 0) {
+		data->i_fast_chg_ua = current_ua;
+		ret = pca9422_charger_apply_temp_charge_current(dev);
+	}
+
+	return ret;
+}
+
+static int pca9422_charger_apply_temp_charge_current(const struct device *dev)
+{
+	const struct charger_pca9422_config *const config = dev->config;
+	struct charger_pca9422_data *data = dev->data;
+	uint8_t val;
+	int ret;
+
+	if (!config->cool_i_fast_chg_enabled) {
+		return 0;
+	}
+
+	ret = mfd_pca9422_reg_read_byte(config->mfd, PCA9422_REG_CHARGER_1_STS, &val);
+	if (ret < 0) {
+		return ret;
+	}
+
+	if (val & PCA9422_BIT_THERM_COOL) {
+		return pca9422_charger_write_fast_charge_current(dev, config->cool_i_fast_chg_ua);
+	}
+
+	ret = pca9422_charger_get_online(dev, &data->online);
+	if (ret < 0) {
+		return ret;
+	}
+
+	if ((data->online != CHARGER_ONLINE_OFFLINE) && ((val & PCA9422_BIT_THERM_COLD) == 0)) {
+		return pca9422_charger_write_fast_charge_current(dev, data->i_fast_chg_ua);
+	}
+
+	return 0;
 }
 
 static int pca9422_charger_set_constant_charge_voltage(const struct device *dev,
@@ -576,6 +631,15 @@ static int pca9422_charger_set_config(const struct device *dev)
 	val = FIELD_PREP(PCA9422_BIT_RECHARGE_TH, data->recharge_th_sel);
 	ret = mfd_pca9422_reg_update_byte(config->mfd, PCA9422_REG_CHARGER_CNTL_4,
 					  PCA9422_BIT_RECHARGE_TH, val);
+	if (ret < 0) {
+		goto lock;
+	}
+
+	if (config->cool_i_fast_chg_enabled) {
+		val = FIELD_PREP(PCA9422_BIT_NEW_I_VBAT_AT_10C, NEW_I_VBAT_AT_10C_25PCT);
+		ret = mfd_pca9422_reg_update_byte(config->mfd, PCA9422_REG_CHARGER_CNTL_7,
+						  PCA9422_BIT_NEW_I_VBAT_AT_10C, val);
+	}
 
 lock:
 	/* Lock charger control register */
@@ -667,6 +731,7 @@ static void pca9422_charger_isr(const struct device *dev)
 			int_val[2], int_val[3], int_val[4], int_val[5]);
 	} else {
 		LOG_ERR("%s: INT_DEVICE_0 ~ INT_CHARGER_3 read fail(%d)\n", __func__, ret);
+		return;
 	}
 	/* Read mask registers */
 	ret = mfd_pca9422_reg_burst_read(config->mfd, PCA9422_REG_INT_DEVICE_0_MASK, mask_val, 6);
@@ -679,11 +744,17 @@ static void pca9422_charger_isr(const struct device *dev)
 	} else {
 		LOG_ERR("%s: INT_DEVICE_0_MASK ~ INT_CHARGER_3_MASK read fail(%d)\n", __func__,
 			ret);
+		return;
 	}
 	/* Set event */
 	if ((int_val[0] & PCA9422_BIT_VIN_OK) && (~mask_val[0] & PCA9422_BIT_VIN_OK)) {
 		/* Check status register */
 		(void)pca9422_charger_get_online(dev, &data->online);
+		ret = pca9422_charger_apply_temp_charge_current(dev);
+		if (ret < 0) {
+			LOG_ERR("%s: Failed to update charge current for temperature(%d)\n",
+				__func__, ret);
+		}
 		LOG_DBG("%s: VIN_OK INT - online=%d\n", __func__, data->online);
 		if (data->charger_online_notifier != NULL) {
 			data->charger_online_notifier(data->online);
@@ -695,6 +766,14 @@ static void pca9422_charger_isr(const struct device *dev)
 		LOG_DBG("%s: VIN_NOK INT - online=%d\n", __func__, data->online);
 		if (data->charger_online_notifier != NULL) {
 			data->charger_online_notifier(data->online);
+		}
+	}
+	if ((int_val[3] & PCA9422_CHARGER_THERM_MASK) &&
+	    (~mask_val[3] & PCA9422_CHARGER_THERM_MASK)) {
+		ret = pca9422_charger_apply_temp_charge_current(dev);
+		if (ret < 0) {
+			LOG_ERR("%s: Failed to update charge current for temperature(%d)\n",
+				__func__, ret);
 		}
 	}
 }
@@ -729,6 +808,11 @@ static int pca9422_charger_init(const struct device *dev)
 		return ret;
 	}
 
+	ret = pca9422_charger_apply_temp_charge_current(dev);
+	if (ret < 0) {
+		return ret;
+	}
+
 	/* Set interrupt handler */
 	mfd_pca9422_set_irqhandler(config->mfd, dev, PCA9422_DEV_CHG, pca9422_charger_isr);
 
@@ -740,7 +824,17 @@ static int pca9422_charger_init(const struct device *dev)
 
 	/* Set interrupt mask register */
 	val = (uint8_t)~(PCA9422_BIT_VIN_OK | PCA9422_BIT_VIN_NOK);
-	return mfd_pca9422_reg_write_byte(config->mfd, PCA9422_REG_INT_DEVICE_0_MASK, val);
+	ret = mfd_pca9422_reg_write_byte(config->mfd, PCA9422_REG_INT_DEVICE_0_MASK, val);
+	if (ret < 0) {
+		return ret;
+	}
+
+	if (config->cool_i_fast_chg_enabled) {
+		val = (uint8_t)~PCA9422_CHARGER_THERM_MASK;
+		ret = mfd_pca9422_reg_write_byte(config->mfd, PCA9422_REG_INT_CHARGER_1_MASK, val);
+	}
+
+	return ret;
 }
 
 static DEVICE_API(charger, pca9422_charger_driver_api) = {
@@ -761,6 +855,10 @@ static DEVICE_API(charger, pca9422_charger_driver_api) = {
 		.mfd = DEVICE_DT_GET(DT_INST_PARENT(inst)),                                        \
 		.vin_i_limit_ua = DT_INST_PROP(inst, input_current_limit_microamp),                \
 		.vsys_reg_uv = DT_INST_PROP(inst, system_voltage_min_threshold_microvolt),         \
+		.cool_i_fast_chg_ua =                                                              \
+			DT_INST_PROP_OR(inst, constant_charge_current_max_microamp_cool_temp, 0),  \
+		.cool_i_fast_chg_enabled = DT_INST_NODE_HAS_PROP(                                  \
+			inst, constant_charge_current_max_microamp_cool_temp),                     \
 	};                                                                                         \
                                                                                                    \
 	DEVICE_DT_INST_DEFINE(inst, &pca9422_charger_init, NULL, &charger_pca9422_data_##inst,     \

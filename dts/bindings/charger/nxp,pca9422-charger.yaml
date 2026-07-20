@@ -18,6 +18,15 @@ properties:
       value. If set to 0 (default) skip setting the charge current value at
       driver initialization.
 
+  constant-charge-current-max-microamp-cool-temp:
+    type: int
+    description: |
+      Fast Charge current programmed into I_FAST_CHG while the charger
+      temperature is in the cool region. When this property is present, the
+      driver sets NEW_I_VBAT_AT_10C to 0b11, so the real cool-region current is
+      step + 0.25 * I_FAST_CHG[6:0] * step. For example, 465000 uA selects the
+      5mA step and code 92, which yields 5mA + 0.25 * 92 * 5mA = 120mA.
+
   constant-charge-voltage-max-microvolt:
     type: int
     required: true
