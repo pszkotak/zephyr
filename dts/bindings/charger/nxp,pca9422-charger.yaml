@@ -22,10 +22,114 @@ properties:
     type: int
     description: |
       Fast Charge current programmed into I_FAST_CHG while the charger
-      temperature is in the cool region. When this property is present, the
-      driver sets NEW_I_VBAT_AT_10C to 0b11, so the real cool-region current is
-      step + 0.25 * I_FAST_CHG[6:0] * step. For example, 465000 uA selects the
-      5mA step and code 92, which yields 5mA + 0.25 * 92 * 5mA = 120mA.
+      temperature is in the cool region. The selected cool-charge-current-percent
+      is applied to this value. If cool-charge-current-percent is omitted, this
+      property defaults the cool region to 25%. For example, 465000 uA selects
+      the 5mA step and code 92. With cool-charge-current-percent = 25, the PMIC
+      yields 5mA + 0.25 * 92 * 5mA = 120mA.
+
+  cold-temperature-threshold-celsius:
+    type: int
+    enum:
+      - -10
+      - -5
+      - 0
+      - 5
+    default: 0
+    description: |
+      Cold temperature threshold in degrees Celsius. Maps to the VCOLD_0C field.
+
+  cool-temperature-threshold-celsius:
+    type: int
+    enum:
+      - 0
+      - 5
+      - 10
+      - 15
+    default: 10
+    description: |
+      Cool temperature threshold in degrees Celsius. Maps to the VCOOL_10C field.
+
+  warm-temperature-threshold-celsius:
+    type: int
+    enum:
+      - 35
+      - 40
+      - 45
+      - 50
+    default: 45
+    description: |
+      Warm temperature threshold in degrees Celsius. Maps to the VWARM_45C field.
+
+  warm-plus-temperature-threshold-celsius:
+    type: int
+    enum:
+      - 35
+      - 40
+      - 45
+      - 50
+    default: 45
+    description: |
+      Warm plus temperature threshold in degrees Celsius. Maps to the VWARM_50C field.
+
+  hot-temperature-threshold-celsius:
+    type: int
+    enum:
+      - 45
+      - 50
+      - 55
+      - 60
+    default: 45
+    description: |
+      Hot temperature threshold in degrees Celsius. Maps to the VHOT_60C field.
+
+  cool-charge-current-percent:
+    type: int
+    enum:
+      - 100
+      - 75
+      - 50
+      - 25
+    description: |
+      Charge current percentage applied in the cool temperature region. If
+      omitted, charging stays at 100% unless constant-charge-current-max-microamp-cool-temp
+      is present, in which case the driver uses 25% for compatibility.
+
+  warm-charge-current-percent:
+    type: int
+    enum:
+      - 100
+      - 75
+      - 50
+      - 25
+    description: |
+      Charge current percentage applied in the warm temperature region. If
+      omitted, charging stays at 100%.
+
+  warm-plus-charge-current-percent:
+    type: int
+    enum:
+      - 100
+      - 75
+      - 50
+      - 25
+    description: |
+      Charge current percentage applied in the warm plus temperature region. If
+      omitted, charging stays at 100%.
+
+  disable-charging-at-cold-temperature:
+    type: boolean
+    description: |
+      Disable charging when the cold temperature region is detected. The PCA9422
+      has a shared cold/hot hardware disable bit; if only this property is set,
+      the driver handles cold-only disable in software.
+
+  disable-charging-at-hot-temperature:
+    type: boolean
+    description: |
+      Disable charging when the hot temperature region is detected. The PCA9422
+      has a shared cold/hot hardware disable bit; if only this property is set,
+      the driver handles hot-only disable in software.
 
   constant-charge-voltage-max-microvolt:
     type: int
