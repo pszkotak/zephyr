@@ -824,7 +824,7 @@
 	AS_NEXT_IN_EP_ADDR(node),			/* bEndpointAddress */	\
 	0x11,						/* bmAttributes */	\
 	U16_LE(0x04),					/* wMaxPacketSize */	\
-	0x01, /* TODO: adjust to P 5.12.4.2 Feedback */	/* bInterval */
+	0x04, /* TODO: adjust to P 5.12.4.2 Feedback */	/* bInterval */
 
 #define AS_EXPLICIT_FEEDBACK_HS_DESCRIPTOR_ARRAY(node)				\
 	static uint8_t DESCRIPTOR_NAME(hs_feedback_ep, node)[] = {		\
