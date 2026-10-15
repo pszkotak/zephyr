@@ -53,6 +53,8 @@ LOG_MODULE_REGISTER(bq274xx, CONFIG_SENSOR_LOG_LEVEL);
 
 /* Config update mode flag */
 #define BQ27XXX_FLAG_CFGUP BIT(4)
+/* Set only on a true POR/RESET */
+#define BQ27XXX_FLAG_ITPOR BIT(5)
 
 /* BQ27427 CC Gain */
 #define BQ27427_CC_GAIN BQ274XX_EXT_BLKDAT(5)
@@ -431,80 +433,92 @@ static int bq274xx_gauge_configure(const struct device *dev)
 		return -EIO;
 	}
 
-	ret = bq274xx_mode_cfgupdate(dev, true);
-	if (ret < 0) {
-		return ret;
-	}
+	/* DataFlash state (Subclass 82, CC Gain erratum, chemistry ID) only
+	 * needs checking after a true POR (ITPOR set) - it can't change
+	 * otherwise. Also avoids SOFT_RESET on every boot, which forces an
+	 * OCV measurement and SOC re-simulation (TRM SLUUBB0).
+	 */
+	uint16_t flags;
 
-	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_CONTROL, 0x00);
+	ret = bq274xx_cmd_reg_read(dev, BQ274XX_CMD_FLAGS, &flags);
 	if (ret < 0) {
-		LOG_ERR("Failed to enable block data memory");
+		LOG_ERR("Unable to read flags");
 		return -EIO;
 	}
 
-	/* Boards that configure Subclass 82 themselves (e.g. by writing a
-	 * manufacturer Golden Image over I2C) set zephyr,skip-dt-state-config
-	 * in devicetree to opt out of this devicetree-derived recompute -
-	 * everything else below still runs unconditionally, same as before.
-	 */
-	if (!config->skip_dt_state_config) {
-		uint16_t designenergy_mwh, taperrate;
-		uint8_t block[BQ27XXX_DM_SZ];
-		bool block_modified = false;
-
-		designenergy_mwh = (uint32_t)config->design_capacity *
-						((uint32_t)config->design_voltage) / 1000;
-		taperrate = config->design_capacity * 10 / config->taper_current;
-
-		ret = bq274xx_read_block(dev, BQ274XX_SUBCLASS_82, block, sizeof(block));
+	if (flags & BQ27XXX_FLAG_ITPOR) {
+		ret = bq274xx_mode_cfgupdate(dev, true);
 		if (ret < 0) {
 			return ret;
 		}
 
-		bq274xx_update_block(block,
-				     regs->dm_design_capacity, config->design_capacity,
-				     &block_modified);
-		bq274xx_update_block(block,
-				     regs->dm_design_energy, designenergy_mwh,
-				     &block_modified);
-		bq274xx_update_block(block,
-				     regs->dm_terminate_voltage, config->terminate_voltage,
-				     &block_modified);
-		bq274xx_update_block(block,
-				     regs->dm_taper_rate, taperrate,
-				     &block_modified);
+		ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_CONTROL, 0x00);
+		if (ret < 0) {
+			LOG_ERR("Failed to enable block data memory");
+			return -EIO;
+		}
 
-		if (block_modified) {
-			LOG_INF("bq274xx: updating fuel gauge parameters");
+		/* Boards that configure Subclass 82 themselves (e.g. by writing a
+		 * manufacturer Golden Image over I2C) set zephyr,skip-dt-state-config
+		 * in devicetree to opt out of this devicetree-derived recompute -
+		 * everything else below still runs unconditionally, same as before.
+		 */
+		if (!config->skip_dt_state_config) {
+			uint16_t designenergy_mwh, taperrate;
+			uint8_t block[BQ27XXX_DM_SZ];
+			bool block_modified = false;
 
-			ret = bq274xx_write_block(dev, block, sizeof(block));
+			designenergy_mwh = (uint32_t)config->design_capacity *
+							((uint32_t)config->design_voltage) / 1000;
+			taperrate = config->design_capacity * 10 / config->taper_current;
+
+			ret = bq274xx_read_block(dev, BQ274XX_SUBCLASS_82, block, sizeof(block));
+			if (ret < 0) {
+				return ret;
+			}
+
+			bq274xx_update_block(block,
+					     regs->dm_design_capacity, config->design_capacity,
+					     &block_modified);
+			bq274xx_update_block(block,
+					     regs->dm_design_energy, designenergy_mwh,
+					     &block_modified);
+			bq274xx_update_block(block,
+					     regs->dm_terminate_voltage, config->terminate_voltage,
+					     &block_modified);
+			bq274xx_update_block(block,
+					     regs->dm_taper_rate, taperrate,
+					     &block_modified);
+
+			if (block_modified) {
+				LOG_INF("bq274xx: updating fuel gauge parameters");
+
+				ret = bq274xx_write_block(dev, block, sizeof(block));
+				if (ret < 0) {
+					return ret;
+				}
+			}
+		}
+
+		/* Don't depend on Subclass 82 having changed. */
+		if (data->regs == &bq27427_regs) {
+			ret = bq27427_ccgain_quirk(dev);
 			if (ret < 0) {
 				return ret;
 			}
 		}
-	}
 
-	/* Previously nested inside "if (block_modified)", which under normal
-	 * operation meant these only ran as a side effect of Subclass 82
-	 * happening to differ. They don't depend on that at all - the CC Gain
-	 * erratum, the chemistry ID, and exiting CONFIG UPDATE (entered
-	 * unconditionally above) all need to happen every time regardless.
-	 */
-	if (data->regs == &bq27427_regs) {
-		ret = bq27427_ccgain_quirk(dev);
+		ret = bq274xx_ensure_chemistry(dev);
 		if (ret < 0) {
 			return ret;
 		}
-	}
 
-	ret = bq274xx_ensure_chemistry(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = bq274xx_mode_cfgupdate(dev, false);
-	if (ret < 0) {
-		return ret;
+		ret = bq274xx_mode_cfgupdate(dev, false);
+		if (ret < 0) {
+			return ret;
+		}
+	} else {
+		LOG_DBG("ITPOR clear - skipping CONFIG UPDATE");
 	}
 
 	ret = bq274xx_ctrl_reg_write(dev, BQ274XX_CTRL_SEALED);
