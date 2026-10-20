@@ -326,6 +326,46 @@ static int bq27427_ccgain_quirk(const struct device *dev)
 	return 0;
 }
 
+/*
+ * Read-only counterpart to bq27427_ccgain_quirk(): reports whether the fix
+ * is needed, without requiring CONFIG UPDATE mode - Subclass 105 is
+ * readable while merely unsealed (TRM SLUUBB0 Table 6-1, access gated by
+ * SEALED/UNSEALED, not CFGUPMODE). Used to decide whether CONFIG UPDATE
+ * needs entering at all; bq27427_ccgain_quirk() itself still does the
+ * actual fix once inside it.
+ */
+static int bq27427_ccgain_check(const struct device *dev, bool *needs_fix)
+{
+	const struct bq274xx_config *const config = dev->config;
+	int ret;
+	uint8_t val;
+
+	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_CLASS,
+				    BQ274XX_SUBCLASS_105);
+	if (ret < 0) {
+		LOG_ERR("Failed to update state subclass");
+		return -EIO;
+	}
+
+	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_BLOCK, 0x00);
+	if (ret < 0) {
+		LOG_ERR("Failed to update block offset");
+		return -EIO;
+	}
+
+	k_sleep(BQ274XX_SUBCLASS_DELAY);
+
+	ret = i2c_reg_read_byte_dt(&config->i2c, BQ27427_CC_GAIN, &val);
+	if (ret < 0) {
+		LOG_ERR("Failed to read ccgain");
+		return -EIO;
+	}
+
+	*needs_fix = (val & BQ27427_CC_GAIN_SIGN_BIT) != 0;
+
+	return 0;
+}
+
 static int bq274xx_ensure_chemistry(const struct device *dev)
 {
 	struct bq274xx_data *data = dev->data;
@@ -389,6 +429,47 @@ static int bq274xx_ensure_chemistry(const struct device *dev)
 	return 0;
 }
 
+/*
+ * Read-only counterpart to bq274xx_ensure_chemistry(): reports whether the
+ * configured chemistry ID differs from what the gauge currently reports,
+ * without requiring CONFIG UPDATE mode - CHEM_ID is a Control() subcommand,
+ * available whenever unsealed. Used to decide whether CONFIG UPDATE needs
+ * entering at all; bq274xx_ensure_chemistry() itself still does the actual
+ * reconfiguration once inside it.
+ */
+static int bq274xx_check_chemistry(const struct device *dev, bool *mismatch)
+{
+	const struct bq274xx_config *const config = dev->config;
+	uint16_t chem_id = config->chemistry_id;
+	int ret;
+	uint16_t val;
+
+	*mismatch = false;
+
+	if (chem_id == 0) {
+		/* No chemistry ID set, rely on the default of the device. */
+		return 0;
+	}
+
+	ret = bq274xx_ctrl_reg_write(dev, BQ274XX_CTRL_CHEM_ID);
+	if (ret < 0) {
+		LOG_ERR("Unable to write control register");
+		return -EIO;
+	}
+
+	ret = bq274xx_cmd_reg_read(dev, BQ274XX_CMD_CONTROL, &val);
+	if (ret < 0) {
+		LOG_ERR("Unable to read register");
+		return -EIO;
+	}
+
+	LOG_DBG("Chem ID: %04x", val);
+
+	*mismatch = (val != chem_id);
+
+	return 0;
+}
+
 static int bq274xx_gauge_configure(const struct device *dev)
 {
 	const struct bq274xx_config *const config = dev->config;
@@ -396,6 +477,13 @@ static int bq274xx_gauge_configure(const struct device *dev)
 	const struct bq274xx_regs *regs;
 	int ret;
 	uint16_t id;
+	uint16_t flags;
+	bool itpor;
+	bool need_cfgupdate;
+	uint8_t block[BQ27XXX_DM_SZ];
+	bool block_modified = false;
+	bool ccgain_needs_fix = false;
+	bool chem_mismatch = false;
 
 	if (data->regs == NULL) {
 		k_sleep(K_TIMEOUT_ABS_MS(POWER_UP_DELAY_MS));
@@ -433,20 +521,74 @@ static int bq274xx_gauge_configure(const struct device *dev)
 		return -EIO;
 	}
 
-	/* DataFlash state (Subclass 82, CC Gain erratum, chemistry ID) only
-	 * needs checking after a true POR (ITPOR set) - it can't change
-	 * otherwise. Also avoids SOFT_RESET on every boot, which forces an
-	 * OCV measurement and SOC re-simulation (TRM SLUUBB0).
-	 */
-	uint16_t flags;
-
 	ret = bq274xx_cmd_reg_read(dev, BQ274XX_CMD_FLAGS, &flags);
 	if (ret < 0) {
 		LOG_ERR("Unable to read flags");
 		return -EIO;
 	}
 
-	if (flags & BQ27XXX_FLAG_ITPOR) {
+	itpor = (flags & BQ27XXX_FLAG_ITPOR) != 0;
+	need_cfgupdate = itpor;
+
+	/* Subclass 82, the CC Gain erratum, and the chemistry ID can all be
+	 * read without entering CONFIG UPDATE mode - DataFlash/CHEM_ID access
+	 * (TRM SLUUBB0 Table 6-1) is gated by SEALED/UNSEALED, not CFGUPMODE.
+	 * So whether CONFIG UPDATE is actually needed can be decided from
+	 * real state, rather than assuming only a true POR (ITPOR) could
+	 * have changed any of it: a firmware/devicetree update can change
+	 * the values below on a board that never lost power, and that still
+	 * needs to be applied - not silently skipped until the next battery
+	 * pull, which in the field may be never.
+	 *
+	 * Boards that configure Subclass 82 themselves (e.g. by writing a
+	 * manufacturer Golden Image over I2C) set zephyr,skip-dt-state-config
+	 * in devicetree to opt out of this devicetree-derived check entirely -
+	 * the CC Gain and chemistry checks below are independent of it and
+	 * always run.
+	 */
+	if (!config->skip_dt_state_config) {
+		uint16_t designenergy_mwh, taperrate;
+
+		designenergy_mwh = (uint32_t)config->design_capacity *
+						((uint32_t)config->design_voltage) / 1000;
+		taperrate = config->design_capacity * 10 / config->taper_current;
+
+		ret = bq274xx_read_block(dev, BQ274XX_SUBCLASS_82, block, sizeof(block));
+		if (ret < 0) {
+			return ret;
+		}
+
+		bq274xx_update_block(block,
+				     regs->dm_design_capacity, config->design_capacity,
+				     &block_modified);
+		bq274xx_update_block(block,
+				     regs->dm_design_energy, designenergy_mwh,
+				     &block_modified);
+		bq274xx_update_block(block,
+				     regs->dm_terminate_voltage, config->terminate_voltage,
+				     &block_modified);
+		bq274xx_update_block(block,
+				     regs->dm_taper_rate, taperrate,
+				     &block_modified);
+
+		need_cfgupdate = need_cfgupdate || block_modified;
+	}
+
+	if (data->regs == &bq27427_regs) {
+		ret = bq27427_ccgain_check(dev, &ccgain_needs_fix);
+		if (ret < 0) {
+			return ret;
+		}
+		need_cfgupdate = need_cfgupdate || ccgain_needs_fix;
+	}
+
+	ret = bq274xx_check_chemistry(dev, &chem_mismatch);
+	if (ret < 0) {
+		return ret;
+	}
+	need_cfgupdate = need_cfgupdate || chem_mismatch;
+
+	if (need_cfgupdate) {
 		ret = bq274xx_mode_cfgupdate(dev, true);
 		if (ret < 0) {
 			return ret;
@@ -458,67 +600,51 @@ static int bq274xx_gauge_configure(const struct device *dev)
 			return -EIO;
 		}
 
-		/* Boards that configure Subclass 82 themselves (e.g. by writing a
-		 * manufacturer Golden Image over I2C) set zephyr,skip-dt-state-config
-		 * in devicetree to opt out of this devicetree-derived recompute -
-		 * everything else below still runs unconditionally, same as before.
-		 */
-		if (!config->skip_dt_state_config) {
-			uint16_t designenergy_mwh, taperrate;
-			uint8_t block[BQ27XXX_DM_SZ];
-			bool block_modified = false;
+		if (block_modified) {
+			LOG_INF("bq274xx: updating fuel gauge parameters");
 
-			designenergy_mwh = (uint32_t)config->design_capacity *
-							((uint32_t)config->design_voltage) / 1000;
-			taperrate = config->design_capacity * 10 / config->taper_current;
-
-			ret = bq274xx_read_block(dev, BQ274XX_SUBCLASS_82, block, sizeof(block));
+			ret = bq274xx_write_block(dev, block, sizeof(block));
 			if (ret < 0) {
 				return ret;
 			}
-
-			bq274xx_update_block(block,
-					     regs->dm_design_capacity, config->design_capacity,
-					     &block_modified);
-			bq274xx_update_block(block,
-					     regs->dm_design_energy, designenergy_mwh,
-					     &block_modified);
-			bq274xx_update_block(block,
-					     regs->dm_terminate_voltage, config->terminate_voltage,
-					     &block_modified);
-			bq274xx_update_block(block,
-					     regs->dm_taper_rate, taperrate,
-					     &block_modified);
-
-			if (block_modified) {
-				LOG_INF("bq274xx: updating fuel gauge parameters");
-
-				ret = bq274xx_write_block(dev, block, sizeof(block));
-				if (ret < 0) {
-					return ret;
-				}
-			}
 		}
 
-		/* Don't depend on Subclass 82 having changed. */
-		if (data->regs == &bq27427_regs) {
+		/* bq27427_ccgain_quirk()/bq274xx_ensure_chemistry() each redo
+		 * their own cheap read-and-compare before writing anything -
+		 * only calling them when the check above already found a real
+		 * mismatch avoids the redundant I2C chatter on every boot that
+		 * entering CONFIG UPDATE for an unrelated reason would
+		 * otherwise cause.
+		 */
+		if (ccgain_needs_fix) {
 			ret = bq27427_ccgain_quirk(dev);
 			if (ret < 0) {
 				return ret;
 			}
 		}
 
-		ret = bq274xx_ensure_chemistry(dev);
-		if (ret < 0) {
-			return ret;
+		if (chem_mismatch) {
+			ret = bq274xx_ensure_chemistry(dev);
+			if (ret < 0) {
+				return ret;
+			}
 		}
 
+		/* EXIT_CFGUPDATE (TRM-gentler, no OCV resample) isn't a
+		 * documented subcommand on the bq27426 (TRM SLUUBB0's Control
+		 * Subcommand table stops at SOFT_RESET) - this project only
+		 * targets bq27426, so SOFT_RESET is used unconditionally here
+		 * rather than risk an unsupported opcode. This still avoids
+		 * the original every-boot OCV resample/SOC jump, since
+		 * need_cfgupdate (and therefore this whole block) is false on
+		 * an ordinary reboot where nothing actually changed.
+		 */
 		ret = bq274xx_mode_cfgupdate(dev, false);
 		if (ret < 0) {
 			return ret;
 		}
 	} else {
-		LOG_DBG("ITPOR clear - skipping CONFIG UPDATE");
+		LOG_DBG("No DataFlash changes pending - skipping CONFIG UPDATE");
 	}
 
 	ret = bq274xx_ctrl_reg_write(dev, BQ274XX_CTRL_SEALED);
