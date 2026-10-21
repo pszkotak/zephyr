@@ -137,9 +137,17 @@ static int bq274xx_get_device_type(const struct device *dev, uint16_t *val)
 	return 0;
 }
 
-static int bq274xx_read_block(const struct device *dev,
-			      uint8_t subclass,
-			      uint8_t *block, uint8_t num_bytes)
+/*
+ * Selects a DataFlash subclass (and its first 32-byte block) for the
+ * BlockData()/BlockDataChecksum() registers to operate on. This selection is
+ * shared, mutable hardware state on the gauge itself - it stays whatever it
+ * was last set to until something else changes it, regardless of which
+ * function made that earlier call. Callers that read or write BlockData()
+ * directly (bq274xx_write_block()) rather than through a subclass-aware
+ * helper must call this immediately beforehand rather than assume a previous
+ * call elsewhere left the right subclass selected.
+ */
+static int bq274xx_select_subclass(const struct device *dev, uint8_t subclass)
 {
 	const struct bq274xx_config *const config = dev->config;
 	int ret;
@@ -158,6 +166,21 @@ static int bq274xx_read_block(const struct device *dev,
 	}
 
 	k_sleep(BQ274XX_SUBCLASS_DELAY);
+
+	return 0;
+}
+
+static int bq274xx_read_block(const struct device *dev,
+			      uint8_t subclass,
+			      uint8_t *block, uint8_t num_bytes)
+{
+	const struct bq274xx_config *const config = dev->config;
+	int ret;
+
+	ret = bq274xx_select_subclass(dev, subclass);
+	if (ret < 0) {
+		return ret;
+	}
 
 	ret = i2c_burst_read_dt(&config->i2c, BQ274XX_EXT_BLKDAT_START, block, num_bytes);
 	if (ret < 0) {
@@ -271,20 +294,10 @@ static int bq27427_ccgain_quirk(const struct device *dev)
 	int ret;
 	uint8_t val, checksum;
 
-	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_CLASS,
-				    BQ274XX_SUBCLASS_105);
+	ret = bq274xx_select_subclass(dev, BQ274XX_SUBCLASS_105);
 	if (ret < 0) {
-		LOG_ERR("Failed to update state subclass");
-		return -EIO;
+		return ret;
 	}
-
-	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_BLOCK, 0x00);
-	if (ret < 0) {
-		LOG_ERR("Failed to update block offset");
-		return -EIO;
-	}
-
-	k_sleep(BQ274XX_SUBCLASS_DELAY);
 
 	ret = i2c_reg_read_byte_dt(&config->i2c, BQ27427_CC_GAIN, &val);
 	if (ret < 0) {
@@ -340,20 +353,10 @@ static int bq27427_ccgain_check(const struct device *dev, bool *needs_fix)
 	int ret;
 	uint8_t val;
 
-	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_CLASS,
-				    BQ274XX_SUBCLASS_105);
+	ret = bq274xx_select_subclass(dev, BQ274XX_SUBCLASS_105);
 	if (ret < 0) {
-		LOG_ERR("Failed to update state subclass");
-		return -EIO;
+		return ret;
 	}
-
-	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_BLOCK, 0x00);
-	if (ret < 0) {
-		LOG_ERR("Failed to update block offset");
-		return -EIO;
-	}
-
-	k_sleep(BQ274XX_SUBCLASS_DELAY);
 
 	ret = i2c_reg_read_byte_dt(&config->i2c, BQ27427_CC_GAIN, &val);
 	if (ret < 0) {
@@ -602,6 +605,18 @@ static int bq274xx_gauge_configure(const struct device *dev)
 
 		if (block_modified) {
 			LOG_INF("bq274xx: updating fuel gauge parameters");
+
+			/* bq27427_ccgain_check() above may have reselected
+			 * Subclass 105 since block was read from Subclass 82 -
+			 * bq274xx_write_block() has no subclass of its own, it
+			 * writes whatever is currently selected, so reselect
+			 * Subclass 82 explicitly rather than assume nothing
+			 * changed the selection in between.
+			 */
+			ret = bq274xx_select_subclass(dev, BQ274XX_SUBCLASS_82);
+			if (ret < 0) {
+				return ret;
+			}
 
 			ret = bq274xx_write_block(dev, block, sizeof(block));
 			if (ret < 0) {
