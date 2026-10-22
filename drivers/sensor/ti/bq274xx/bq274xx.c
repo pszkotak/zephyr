@@ -53,6 +53,8 @@ LOG_MODULE_REGISTER(bq274xx, CONFIG_SENSOR_LOG_LEVEL);
 
 /* Config update mode flag */
 #define BQ27XXX_FLAG_CFGUP BIT(4)
+/* Set only on a true POR/RESET */
+#define BQ27XXX_FLAG_ITPOR BIT(5)
 
 /* BQ27427 CC Gain */
 #define BQ27427_CC_GAIN BQ274XX_EXT_BLKDAT(5)
@@ -135,9 +137,17 @@ static int bq274xx_get_device_type(const struct device *dev, uint16_t *val)
 	return 0;
 }
 
-static int bq274xx_read_block(const struct device *dev,
-			      uint8_t subclass,
-			      uint8_t *block, uint8_t num_bytes)
+/*
+ * Selects a DataFlash subclass (and its first 32-byte block) for the
+ * BlockData()/BlockDataChecksum() registers to operate on. This selection is
+ * shared, mutable hardware state on the gauge itself - it stays whatever it
+ * was last set to until something else changes it, regardless of which
+ * function made that earlier call. Callers that read or write BlockData()
+ * directly (bq274xx_write_block()) rather than through a subclass-aware
+ * helper must call this immediately beforehand rather than assume a previous
+ * call elsewhere left the right subclass selected.
+ */
+static int bq274xx_select_subclass(const struct device *dev, uint8_t subclass)
 {
 	const struct bq274xx_config *const config = dev->config;
 	int ret;
@@ -156,6 +166,21 @@ static int bq274xx_read_block(const struct device *dev,
 	}
 
 	k_sleep(BQ274XX_SUBCLASS_DELAY);
+
+	return 0;
+}
+
+static int bq274xx_read_block(const struct device *dev,
+			      uint8_t subclass,
+			      uint8_t *block, uint8_t num_bytes)
+{
+	const struct bq274xx_config *const config = dev->config;
+	int ret;
+
+	ret = bq274xx_select_subclass(dev, subclass);
+	if (ret < 0) {
+		return ret;
+	}
 
 	ret = i2c_burst_read_dt(&config->i2c, BQ274XX_EXT_BLKDAT_START, block, num_bytes);
 	if (ret < 0) {
@@ -269,20 +294,10 @@ static int bq27427_ccgain_quirk(const struct device *dev)
 	int ret;
 	uint8_t val, checksum;
 
-	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_CLASS,
-				    BQ274XX_SUBCLASS_105);
+	ret = bq274xx_select_subclass(dev, BQ274XX_SUBCLASS_105);
 	if (ret < 0) {
-		LOG_ERR("Failed to update state subclass");
-		return -EIO;
+		return ret;
 	}
-
-	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_BLOCK, 0x00);
-	if (ret < 0) {
-		LOG_ERR("Failed to update block offset");
-		return -EIO;
-	}
-
-	k_sleep(BQ274XX_SUBCLASS_DELAY);
 
 	ret = i2c_reg_read_byte_dt(&config->i2c, BQ27427_CC_GAIN, &val);
 	if (ret < 0) {
@@ -320,6 +335,36 @@ static int bq27427_ccgain_quirk(const struct device *dev)
 	}
 
 	k_sleep(BQ274XX_SUBCLASS_DELAY);
+
+	return 0;
+}
+
+/*
+ * Read-only counterpart to bq27427_ccgain_quirk(): reports whether the fix
+ * is needed, without requiring CONFIG UPDATE mode - Subclass 105 is
+ * readable while merely unsealed (TRM SLUUBB0 Table 6-1, access gated by
+ * SEALED/UNSEALED, not CFGUPMODE). Used to decide whether CONFIG UPDATE
+ * needs entering at all; bq27427_ccgain_quirk() itself still does the
+ * actual fix once inside it.
+ */
+static int bq27427_ccgain_check(const struct device *dev, bool *needs_fix)
+{
+	const struct bq274xx_config *const config = dev->config;
+	int ret;
+	uint8_t val;
+
+	ret = bq274xx_select_subclass(dev, BQ274XX_SUBCLASS_105);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = i2c_reg_read_byte_dt(&config->i2c, BQ27427_CC_GAIN, &val);
+	if (ret < 0) {
+		LOG_ERR("Failed to read ccgain");
+		return -EIO;
+	}
+
+	*needs_fix = (val & BQ27427_CC_GAIN_SIGN_BIT) != 0;
 
 	return 0;
 }
@@ -387,6 +432,47 @@ static int bq274xx_ensure_chemistry(const struct device *dev)
 	return 0;
 }
 
+/*
+ * Read-only counterpart to bq274xx_ensure_chemistry(): reports whether the
+ * configured chemistry ID differs from what the gauge currently reports,
+ * without requiring CONFIG UPDATE mode - CHEM_ID is a Control() subcommand,
+ * available whenever unsealed. Used to decide whether CONFIG UPDATE needs
+ * entering at all; bq274xx_ensure_chemistry() itself still does the actual
+ * reconfiguration once inside it.
+ */
+static int bq274xx_check_chemistry(const struct device *dev, bool *mismatch)
+{
+	const struct bq274xx_config *const config = dev->config;
+	uint16_t chem_id = config->chemistry_id;
+	int ret;
+	uint16_t val;
+
+	*mismatch = false;
+
+	if (chem_id == 0) {
+		/* No chemistry ID set, rely on the default of the device. */
+		return 0;
+	}
+
+	ret = bq274xx_ctrl_reg_write(dev, BQ274XX_CTRL_CHEM_ID);
+	if (ret < 0) {
+		LOG_ERR("Unable to write control register");
+		return -EIO;
+	}
+
+	ret = bq274xx_cmd_reg_read(dev, BQ274XX_CMD_CONTROL, &val);
+	if (ret < 0) {
+		LOG_ERR("Unable to read register");
+		return -EIO;
+	}
+
+	LOG_DBG("Chem ID: %04x", val);
+
+	*mismatch = (val != chem_id);
+
+	return 0;
+}
+
 static int bq274xx_gauge_configure(const struct device *dev)
 {
 	const struct bq274xx_config *const config = dev->config;
@@ -394,6 +480,13 @@ static int bq274xx_gauge_configure(const struct device *dev)
 	const struct bq274xx_regs *regs;
 	int ret;
 	uint16_t id;
+	uint16_t flags;
+	bool itpor;
+	bool need_cfgupdate;
+	uint8_t block[BQ27XXX_DM_SZ];
+	bool block_modified = false;
+	bool ccgain_needs_fix = false;
+	bool chem_mismatch = false;
 
 	if (data->regs == NULL) {
 		k_sleep(K_TIMEOUT_ABS_MS(POWER_UP_DELAY_MS));
@@ -431,26 +524,33 @@ static int bq274xx_gauge_configure(const struct device *dev)
 		return -EIO;
 	}
 
-	ret = bq274xx_mode_cfgupdate(dev, true);
+	ret = bq274xx_cmd_reg_read(dev, BQ274XX_CMD_FLAGS, &flags);
 	if (ret < 0) {
-		return ret;
-	}
-
-	ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_CONTROL, 0x00);
-	if (ret < 0) {
-		LOG_ERR("Failed to enable block data memory");
+		LOG_ERR("Unable to read flags");
 		return -EIO;
 	}
 
-	/* Boards that configure Subclass 82 themselves (e.g. by writing a
+	itpor = (flags & BQ27XXX_FLAG_ITPOR) != 0;
+	need_cfgupdate = itpor;
+
+	/* Subclass 82, the CC Gain erratum, and the chemistry ID can all be
+	 * read without entering CONFIG UPDATE mode - DataFlash/CHEM_ID access
+	 * (TRM SLUUBB0 Table 6-1) is gated by SEALED/UNSEALED, not CFGUPMODE.
+	 * So whether CONFIG UPDATE is actually needed can be decided from
+	 * real state, rather than assuming only a true POR (ITPOR) could
+	 * have changed any of it: a firmware/devicetree update can change
+	 * the values below on a board that never lost power, and that still
+	 * needs to be applied - not silently skipped until the next battery
+	 * pull, which in the field may be never.
+	 *
+	 * Boards that configure Subclass 82 themselves (e.g. by writing a
 	 * manufacturer Golden Image over I2C) set zephyr,skip-dt-state-config
-	 * in devicetree to opt out of this devicetree-derived recompute -
-	 * everything else below still runs unconditionally, same as before.
+	 * in devicetree to opt out of this devicetree-derived check entirely -
+	 * the CC Gain and chemistry checks below are independent of it and
+	 * always run.
 	 */
 	if (!config->skip_dt_state_config) {
 		uint16_t designenergy_mwh, taperrate;
-		uint8_t block[BQ27XXX_DM_SZ];
-		bool block_modified = false;
 
 		designenergy_mwh = (uint32_t)config->design_capacity *
 						((uint32_t)config->design_voltage) / 1000;
@@ -474,37 +574,92 @@ static int bq274xx_gauge_configure(const struct device *dev)
 				     regs->dm_taper_rate, taperrate,
 				     &block_modified);
 
+		need_cfgupdate = need_cfgupdate || block_modified;
+	}
+
+	if (data->regs == &bq27427_regs) {
+		ret = bq27427_ccgain_check(dev, &ccgain_needs_fix);
+		if (ret < 0) {
+			return ret;
+		}
+		need_cfgupdate = need_cfgupdate || ccgain_needs_fix;
+	}
+
+	ret = bq274xx_check_chemistry(dev, &chem_mismatch);
+	if (ret < 0) {
+		return ret;
+	}
+	need_cfgupdate = need_cfgupdate || chem_mismatch;
+
+	if (need_cfgupdate) {
+		ret = bq274xx_mode_cfgupdate(dev, true);
+		if (ret < 0) {
+			return ret;
+		}
+
+		ret = i2c_reg_write_byte_dt(&config->i2c, BQ274XX_EXT_DATA_CONTROL, 0x00);
+		if (ret < 0) {
+			LOG_ERR("Failed to enable block data memory");
+			return -EIO;
+		}
+
 		if (block_modified) {
 			LOG_INF("bq274xx: updating fuel gauge parameters");
+
+			/* bq27427_ccgain_check() above may have reselected
+			 * Subclass 105 since block was read from Subclass 82 -
+			 * bq274xx_write_block() has no subclass of its own, it
+			 * writes whatever is currently selected, so reselect
+			 * Subclass 82 explicitly rather than assume nothing
+			 * changed the selection in between.
+			 */
+			ret = bq274xx_select_subclass(dev, BQ274XX_SUBCLASS_82);
+			if (ret < 0) {
+				return ret;
+			}
 
 			ret = bq274xx_write_block(dev, block, sizeof(block));
 			if (ret < 0) {
 				return ret;
 			}
 		}
-	}
 
-	/* Previously nested inside "if (block_modified)", which under normal
-	 * operation meant these only ran as a side effect of Subclass 82
-	 * happening to differ. They don't depend on that at all - the CC Gain
-	 * erratum, the chemistry ID, and exiting CONFIG UPDATE (entered
-	 * unconditionally above) all need to happen every time regardless.
-	 */
-	if (data->regs == &bq27427_regs) {
-		ret = bq27427_ccgain_quirk(dev);
+		/* bq27427_ccgain_quirk()/bq274xx_ensure_chemistry() each redo
+		 * their own cheap read-and-compare before writing anything -
+		 * only calling them when the check above already found a real
+		 * mismatch avoids the redundant I2C chatter on every boot that
+		 * entering CONFIG UPDATE for an unrelated reason would
+		 * otherwise cause.
+		 */
+		if (ccgain_needs_fix) {
+			ret = bq27427_ccgain_quirk(dev);
+			if (ret < 0) {
+				return ret;
+			}
+		}
+
+		if (chem_mismatch) {
+			ret = bq274xx_ensure_chemistry(dev);
+			if (ret < 0) {
+				return ret;
+			}
+		}
+
+		/* EXIT_CFGUPDATE (TRM-gentler, no OCV resample) isn't a
+		 * documented subcommand on the bq27426 (TRM SLUUBB0's Control
+		 * Subcommand table stops at SOFT_RESET) - this project only
+		 * targets bq27426, so SOFT_RESET is used unconditionally here
+		 * rather than risk an unsupported opcode. This still avoids
+		 * the original every-boot OCV resample/SOC jump, since
+		 * need_cfgupdate (and therefore this whole block) is false on
+		 * an ordinary reboot where nothing actually changed.
+		 */
+		ret = bq274xx_mode_cfgupdate(dev, false);
 		if (ret < 0) {
 			return ret;
 		}
-	}
-
-	ret = bq274xx_ensure_chemistry(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = bq274xx_mode_cfgupdate(dev, false);
-	if (ret < 0) {
-		return ret;
+	} else {
+		LOG_DBG("No DataFlash changes pending - skipping CONFIG UPDATE");
 	}
 
 	ret = bq274xx_ctrl_reg_write(dev, BQ274XX_CTRL_SEALED);
