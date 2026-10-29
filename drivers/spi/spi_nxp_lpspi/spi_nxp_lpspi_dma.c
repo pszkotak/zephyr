@@ -275,6 +275,21 @@ static void lpspi_dma_callback(const struct device *dev, void *arg, uint32_t cha
 
 	case LPSPI_TRANSFER_STATE_TX_DONE:
 	case LPSPI_TRANSFER_STATE_RX_DONE:
+		/* The second channel to finish lands here, not in the ONGOING end-of-transfer
+		 * branch, so stop it here too. TX can finish after RX when both DMA
+		 * interrupts are pending at once (RX has the lower IRQ number), and the TCR
+		 * must still be issued then, or PCS stays asserted.
+		 */
+		ret = dma_stop(dev, channel);
+		if (ret != 0) {
+			goto error;
+		}
+		if (channel == dma_data->dma_tx.channel) {
+			spi_mcux_issue_TCR(spi_dev);
+			base->DER &= ~LPSPI_DER_TDDE_MASK;
+		} else {
+			base->DER &= ~LPSPI_DER_RDDE_MASK;
+		}
 		dma_data->state = LPSPI_TRANSFER_STATE_RX_TX_DONE;
 		/* TX and RX both done here. */
 		spi_context_complete(ctx, spi_dev, 0);
